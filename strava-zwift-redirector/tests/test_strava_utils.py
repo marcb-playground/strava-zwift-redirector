@@ -2,6 +2,9 @@
 import pytest, os
 from strava_utils import get_strava_client, fetch_activity, subscribe_to_strava_push
 from stravalib import Client
+STRAVA_SOURCE_CLIENT_ID = os.getenv('STRAVA_SOURCE_CLIENT_ID')
+STRAVA_SOURCE_CLIENT_SECRET = os.getenv('STRAVA_SOURCE_CLIENT_SECRET')
+STRAVA_SOURCE_REFRESH_TOKEN = os.getenv('STRAVA_SOURCE_REFRESH_TOKEN')
 
 
 @pytest.fixture
@@ -11,10 +14,7 @@ def mock_client(mocker):
 
 @pytest.fixture
 def strava_client():
-    STRAVA_SOURCE_CLIENT_ID = os.getenv('STRAVA_SOURCE_CLIENT_ID')
-    STRAVA_SOURCE_CLIENT_SECRET = os.getenv('STRAVA_SOURCE_CLIENT_SECRET')
-    STRAVA_SOURCE_REFRESH_TOKEN = os.getenv('STRAVA_SOURCE_REFRESH_TOKEN')
-
+    
     return get_strava_client(client_id=STRAVA_SOURCE_CLIENT_ID,
                                client_secret=STRAVA_SOURCE_CLIENT_SECRET,
                                refresh_token=STRAVA_SOURCE_REFRESH_TOKEN)
@@ -40,7 +40,8 @@ def test_subscribe_to_strava_push(strava_client):
     subscription_url = 'https://www.strava.com/api/v3/push_subscriptions'
     try:
         subscribe_to_strava_push(subscription_url=subscription_url, 
-                                        client=strava_client, 
+                                        client_id=STRAVA_SOURCE_CLIENT_ID, 
+                                        client_secret=STRAVA_SOURCE_CLIENT_SECRET,
                                         callback_url= STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL)
         
         assert 1 == 1
