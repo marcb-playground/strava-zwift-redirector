@@ -42,45 +42,8 @@ def handle_strava_notification(data, source_client, destination_access_token, wa
 
 def verify_webhook(hub_mode, hub_challenge, hub_verify_token, client_id):
     if hub_mode == 'subscribe':
-        return hub_challenge
+        print("verifying subscription")
+        return jsonify({'hub.challenge': hub_challenge}), 200
     else:
+        print("not subscribe mode")
         return jsonify({'error': 'Verification failed'}), 403
-
-def subscribe_to_webhook(subscription_url, client_id, client_secret, callback_url):
-    headers = {'Authorization': f'Bearer {access_token}'}
-    
-    #subscribe
-    response = 
-
-    # validate
-    payload = {
-        'hub.callback': callback_url,
-        'hub.mode': 'subscribe',
-        'hub.verify_token': access_token,
-        'hub.topic': ""
-    }
-    print("Subscribe info: " + str(payload))
-    response = requests.post(subscription_url, headers=headers, data=payload)
-
-    if response.status_code == 200:
-        print(string(response))
-        return jsonify({'message': 'Subscription successful'}), 200
-    else:
-        return jsonify({'error': 'Failed to subscribe', 'details': response.json()}), response.status_code
-
-# def subscribe_to_webhook(subscription_url, access_token, callback_url):
-#     headers = {'Authorization': f'Bearer {access_token}'}
-#     payload = {
-#         'hub.callback': callback_url,
-#         'hub.mode': 'subscribe',
-#         'hub.verify_token': access_token,
-#         'hub.topic': ""
-#     }
-#     print("Subscribe info: " + str(payload))
-#     response = requests.post(subscription_url, headers=headers, data=payload)
-
-#     if response.status_code == 200:
-#         print(string(response))
-#         return jsonify({'message': 'Subscription successful'}), 200
-#     else:
-#         return jsonify({'error': 'Failed to subscribe', 'details': response.json()}), response.status_code

@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 from stravalib import Client
 import urllib3
-
+from flask import request, jsonify
 
 def get_strava_client(client_id,client_secret,refresh_token):
     urllib3.disable_warnings()
@@ -36,3 +36,23 @@ def fetch_activity(client, activity_id):
         return client.get_activity(activity_id)
     except Exception as e:
         raise RuntimeError(f"Failed to fetch activity: {e}")
+    
+
+def subscribe_to_strava_push(subscription_url, client, callback_url):
+    headers = {'Authorization': f'Bearer {client.access_token}'}
+
+    # validate
+    payload = {
+        'hub.callback': callback_url,
+        'hub.mode': 'subscribe',
+        'hub.verify_token': 'STRAVA-1234',
+        'hub.topic': ""
+    }
+    print("Subscribe info: " + str(payload))
+    response = requests.post(subscription_url, headers=headers, data=payload)
+
+    if response.status_code == 200:
+        print(str(response))
+        return jsonify({'message': 'Subscription successful. Sub id ' + str(response.json()['id'])}), 200
+    else:
+        return jsonify({'error': 'Failed to subscribe', 'details': response.json()}), response.status_code
