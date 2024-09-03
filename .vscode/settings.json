@@ -1,0 +1,7 @@
+{
+    "python.testing.pytestArgs": [
+        "strava-zwift-redirector"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
