@@ -27,16 +27,22 @@ def get_strava_client(client_id,client_secret,refresh_token):
     print(datetime.utcfromtimestamp(expiry_ts).strftime('%Y-%m-%d %H:%M:%S'))
 
     print("getting strava client")
-    client = Client()
-    client.access_token = access_token
+    client = Client(access_token=access_token)
     return client
 
-def fetch_activity(client, activity_id):
+def fetch_activity_detail(client, activity_id):
     try:
         return client.get_activity(activity_id)
     except Exception as e:
         raise RuntimeError(f"Failed to fetch activity: {e}")
     
+def fetch_activities(client, limit=10):
+    try:
+        return client.get_activities(limit=limit)
+    except Exception as e:
+        raise RuntimeError(f"Failed to get activites : {e}")
+    
+
 
 def subscribe_to_strava_push(subscription_url, client_id, client_secret, callback_url):
     #headers = {'Authorization': f'Bearer {client.access_token}'}
