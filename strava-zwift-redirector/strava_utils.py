@@ -6,6 +6,42 @@ import urllib3
 from flask import request, jsonify
 
 def get_strava_client(client_id,client_secret,refresh_token):
+   
+    access_token = get_access_token(client_id,client_secret,refresh_token)
+    print("getting strava client")
+    client = Client(access_token=access_token)
+    return client
+
+def get_refresh_token(client_id,client_secret,code_from_redirect):
+    urllib3.disable_warnings()
+    print("getting client token")
+    auth_url ="https://www.strava.com/oauth/token"
+    payload = {
+        'client_id' : client_id,
+        'client_secret' : client_secret,
+        'code' : code_from_redirect,
+        'grant_type' : "authorization_code",
+        'f':'json'
+    }
+    print("Requesting the token...\n")
+    res = requests.post(auth_url,data=payload,verify=False)
+    print(res.json())
+    print()
+
+    try:
+        refresh_token = res.json()['refresh_token']
+        expiry_ts = res.json()['expires_at']
+    except Exception as err:
+        raise(f"Failed get get refresh token: {err}")
+    print("New token will expire at: ",end='\t')
+    print(datetime.utcfromtimestamp(expiry_ts).strftime('%Y-%m-%d %H:%M:%S'))
+    return refresh_token
+
+def get_access_token(client_id,client_secret,refresh_token):
+    """
+    Need to authorize scope 
+    https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
+    """
     urllib3.disable_warnings()
     print("getting client token")
     auth_url ="https://www.strava.com/oauth/token"
@@ -21,14 +57,14 @@ def get_strava_client(client_id,client_secret,refresh_token):
     print(res.json())
     print()
 
-    access_token = res.json()['access_token']
-    expiry_ts = res.json()['expires_at']
+    try:
+        access_token = res.json()['access_token']
+        expiry_ts = res.json()['expires_at']
+    except Exception as err:
+        raise(f"Failed get get access token: {err}")
     print("New token will expire at: ",end='\t')
     print(datetime.utcfromtimestamp(expiry_ts).strftime('%Y-%m-%d %H:%M:%S'))
-
-    print("getting strava client")
-    client = Client(access_token=access_token)
-    return client
+    return access_token
 
 def fetch_activity_detail(client, activity_id):
     try:
