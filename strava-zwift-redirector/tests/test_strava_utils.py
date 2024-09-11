@@ -40,28 +40,34 @@ def test_fetch_activity_detail():
 
 def test_get_refresh_token():
     ## TO FIX!!
-     """
+    """
     Need to authorize scope 
     https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
     """
-    code_from_redirect = "GET FROM USER REDIRECT"
+    auth_code = "2ae60de550de1c86050fa27ca4f846d137829799"
+    #auth_code = STRAVA_SOURCE_REFRESH_TOKEN
     ## TO FIX!!
-    refresh_token = strava_utils.get_refresh_token(client_id=STRAVA_SOURCE_CLIENT_ID,
+    #refresh_token = strava_utils.get_refresh_token_from_refresh(client_id=STRAVA_SOURCE_CLIENT_ID,
+    #                           client_secret=STRAVA_SOURCE_CLIENT_SECRET,
+    #                          refresh_token=STRAVA_SOURCE_REFRESH_TOKEN)
+    
+    #assert refresh_token is not None
+
+    refresh_token = strava_utils.get_refresh_token_from_auth_code(client_id=STRAVA_SOURCE_CLIENT_ID,
                                client_secret=STRAVA_SOURCE_CLIENT_SECRET,
-                               code_from_redirect=code_from_redirect)
+                               auth_code=auth_code)
     
     assert refresh_token is not None
 
+
 def test_get_access_token():
-    code_from_redirect = "INPUT CODE FROM REDIRECT"
-    refresh_token = strava_utils.get_refresh_token(client_id=STRAVA_SOURCE_CLIENT_ID,
-                              client_secret=STRAVA_SOURCE_CLIENT_SECRET,
-                              code_from_redirect=code_from_redirect)
+    refresh_token = "USER REFRESH TOKEN - FROM URI REDIRECT OR STORED RESPONSE"
+
     access_token = strava_utils.get_access_token(client_id=STRAVA_SOURCE_CLIENT_ID,
                                client_secret=STRAVA_SOURCE_CLIENT_SECRET,
                                refresh_token=refresh_token)
     
-    assert refresh_token is not None
+    assert access_token is not None
 
 def test_subscribe_to_strava_push(strava_client):
     STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL = os.getenv('WEBHOOK_CALLBACK_URL')

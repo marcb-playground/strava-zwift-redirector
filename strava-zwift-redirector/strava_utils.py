@@ -12,29 +12,62 @@ def get_strava_client(client_id,client_secret,refresh_token):
     client = Client(access_token=access_token)
     return client
 
-def get_refresh_token(client_id,client_secret,code_from_redirect):
+def get_refresh_token_from_auth_code(client_id,client_secret,auth_code):
     urllib3.disable_warnings()
     print("getting client token")
     auth_url ="https://www.strava.com/oauth/token"
     payload = {
         'client_id' : client_id,
         'client_secret' : client_secret,
-        'code' : code_from_redirect,
+        'code' : auth_code,
         'grant_type' : "authorization_code",
         'f':'json'
     }
     print("Requesting the token...\n")
-    res = requests.post(auth_url,data=payload,verify=False)
-    print(res.json())
+    response = requests.post(auth_url,data=payload,verify=False)
+    print(response.json())
     print()
-
+    if response.status_code == 200:
+        print("success call: \n" + str(response.text))
+    else:
+        
+        raise Exception("failed to call")
     try:
-        refresh_token = res.json()['refresh_token']
-        expiry_ts = res.json()['expires_at']
+        refresh_token = response.json()['refresh_token']
+        #expiry_ts = res.json()['expires_at']
     except Exception as err:
-        raise(f"Failed get get refresh token: {err}")
+        raise RuntimeError(f"Failed get get refresh token: {err}")
     print("New token will expire at: ",end='\t')
-    print(datetime.utcfromtimestamp(expiry_ts).strftime('%Y-%m-%d %H:%M:%S'))
+    #print(datetime.utcfromtimestamp(expiry_ts).strftime('%Y-%m-%d %H:%M:%S'))
+    return refresh_token
+
+def get_refresh_token_from_refresh(client_id,client_secret,refresh_token):
+    urllib3.disable_warnings()
+    print("getting client token")
+    auth_url ="https://www.strava.com/oauth/token"
+    payload = {
+        'client_id' : client_id,
+        'client_secret' : client_secret,
+        'refresh_token' : refresh_token,
+        'grant_type' : "refresh_token",
+        'f':'json'
+    }
+    print("Requesting the token...\n")
+    response = requests.post(auth_url,data=payload,verify=False)
+    print(response.json())
+    print()
+    if response.status_code == 200:
+        print("success call: \n" + str(response.text))
+    else:
+        
+        raise Exception("failed to call")
+    try:
+        refresh_token = response.json()['refresh_token']
+        #expiry_ts = res.json()['expires_at']
+    except Exception as err:
+        raise RuntimeError(f"Failed get get refresh token: {err}")
+    print("New token will expire at: ",end='\t')
+    #print(datetime.utcfromtimestamp(expiry_ts).strftime('%Y-%m-%d %H:%M:%S'))
     return refresh_token
 
 def get_access_token(client_id,client_secret,refresh_token):
@@ -53,15 +86,19 @@ def get_access_token(client_id,client_secret,refresh_token):
         'f':'json'
     }
     print("Requesting the token...\n")
-    res = requests.post(auth_url,data=payload,verify=False)
-    print(res.json())
+    response = requests.post(auth_url,data=payload,verify=False)
+    print(response.json())
     print()
-
+    if response.status_code == 200:
+        print("success call: \n" + str(response.text))
+    else:
+        
+        raise Exception("failed to call")
     try:
-        access_token = res.json()['access_token']
-        expiry_ts = res.json()['expires_at']
+        access_token = response.json()['access_token']
+        expiry_ts = response.json()['expires_at']
     except Exception as err:
-        raise(f"Failed get get access token: {err}")
+        raise RuntimeError(f"Failed get get access token: {err}")
     print("New token will expire at: ",end='\t')
     print(datetime.utcfromtimestamp(expiry_ts).strftime('%Y-%m-%d %H:%M:%S'))
     return access_token

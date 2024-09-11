@@ -1,7 +1,7 @@
 # webhook_handler.py
 import requests
 from flask import request, jsonify
-from strava_utils import fetch_activity
+from strava_utils import fetch_activity_detail
 
 def handle_strava_notification(data, source_client, destination_access_token, wattage_threshold):
     if not data:
@@ -13,7 +13,7 @@ def handle_strava_notification(data, source_client, destination_access_token, wa
 
     # Fetch activity details using stravalib
     try:
-        activity = fetch_activity(source_client, activity_id)
+        activity = fetch_activity_detail(source_client, activity_id)
     except RuntimeError as e:
         return jsonify({'error': str(e)}), 500
     file_path = None
