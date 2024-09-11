@@ -44,9 +44,8 @@ def test_get_refresh_token():
     Need to authorize scope 
     https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
     """
-    auth_code = "2ae60de550de1c86050fa27ca4f846d137829799"
-    #auth_code = STRAVA_SOURCE_REFRESH_TOKEN
-    ## TO FIX!!
+    auth_code = "get auth code from above URI to reset a new auth code"
+
     #refresh_token = strava_utils.get_refresh_token_from_refresh(client_id=STRAVA_SOURCE_CLIENT_ID,
     #                           client_secret=STRAVA_SOURCE_CLIENT_SECRET,
     #                          refresh_token=STRAVA_SOURCE_REFRESH_TOKEN)
@@ -61,7 +60,7 @@ def test_get_refresh_token():
 
 
 def test_get_access_token():
-    refresh_token = "USER REFRESH TOKEN - FROM URI REDIRECT OR STORED RESPONSE"
+    refresh_token = "stored user refresh token"
 
     access_token = strava_utils.get_access_token(client_id=STRAVA_SOURCE_CLIENT_ID,
                                client_secret=STRAVA_SOURCE_CLIENT_SECRET,
