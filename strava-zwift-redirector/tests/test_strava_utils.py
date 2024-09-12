@@ -33,6 +33,7 @@ def test_fetch_activities(strava_client):
     print(str(latest_activities))
     activity_ids = [activity.id for activity in latest_activities]
     assert len(activity_ids) == 1
+
 def test_fetch_activity_detail(strava_client):
     latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
 
@@ -67,24 +68,43 @@ def test_save_activity_file(strava_client):
     assert file_path.is_file(), f"File '{file_path}' does not exist."
 
 
-def test_upload_activity_file(strava_client_target):
-    upload_file_path = "/tmp/athlete_fit_file_240912145647.fit"
+def test_upload_activity_file(strava_client_target,strava_client):
+    from datetime import datetime
+    now = datetime.now()
+
+    # Format the date and time
+    formatted_date_time = now.strftime('%y%m%d%H%M%S')
+    sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}.fit"
+    latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
+
+    *_, last_activity = latest_activities
+
+    strava_utils.save_activity_file(
+        client=strava_client_target,
+        activity_id=last_activity.id,
+        output_path=sample_output_path
+    )  
+    from pathlib import Path
+    file_path = Path(sample_output_path)
+
+    assert file_path.is_file(), f"File '{file_path}' does not exist."
+    
     name="TEST1"
     desc="DESC1"
-    activity_id = strava_utils.upload_activity_file(strava_client_target,upload_file_path,name,desc)
+    activity_id = strava_utils.upload_activity_file(strava_client_target,file_path,name,desc)
 
     assert activity_id is not None
     assert activity_id != 0
 
-def test_get_refresh_token():
+def test_get_refresh_token_source():
     ## TO FIX!!
     """
     Need to authorize scope 
     source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
     134606
-    target: https://www.strava.com/oauth/authorize?client_id=134606&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write
+    target: https://www.strava.com/oauth/authorize?client_id=134606&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write,activity:read_all
     """
-    auth_code = "get auth code from above URI to reset a new auth code"
+    auth_code = "from gui"
 
     #refresh_token = strava_utils.get_refresh_token_from_refresh(client_id=STRAVA_SOURCE_CLIENT_ID,
     #                           client_secret=STRAVA_SOURCE_CLIENT_SECRET,
@@ -98,6 +118,27 @@ def test_get_refresh_token():
     
     assert refresh_token is not None
 
+def test_get_refresh_token_target():
+    ## TO FIX!!
+    """
+    Need to authorize scope 
+    source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
+    134606
+    target: https://www.strava.com/oauth/authorize?client_id=134606&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write,activity:read_all
+    """
+    auth_code = "from gui"
+
+    #refresh_token = strava_utils.get_refresh_token_from_refresh(client_id=STRAVA_SOURCE_CLIENT_ID,
+    #                           client_secret=STRAVA_SOURCE_CLIENT_SECRET,
+    #                          refresh_token=STRAVA_SOURCE_REFRESH_TOKEN)
+    
+    #assert refresh_token is not None
+
+    refresh_token = strava_utils.get_refresh_token_from_auth_code(client_id=STRAVA_TARGET_CLIENT_ID,
+                               client_secret=STRAVA_TARGET_CLIENT_SECRET,
+                               auth_code=auth_code)
+    
+    assert refresh_token is not None
 
 def test_get_access_token():
     refresh_token = "stored user refresh token"

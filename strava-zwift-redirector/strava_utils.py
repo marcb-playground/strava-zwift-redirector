@@ -5,31 +5,44 @@ from stravalib import Client
 import urllib3
 from pathlib import Path
 
+
 def save_activity_file(client, activity_id, output_path):
     """Fetches activity data from Strava and saves it as a .fit file."""
-    activity = client.get_activity(activity_id)
-    
+    # activity = client.get_activity(activity_id)
+
     # Fetch the activity file (usually .fit or .tcx format)
-    #https://www.strava.com/activities/{activity_id}/export_original
+    # https://www.strava.com/activities/{activity_id}/export_original
     fit_file_url = f"https://www.strava.com/activities/{activity_id}/export_original"
     try:
         Path(os.path.dirname(output_path)).mkdir(parents=True, exist_ok=True)
     except Exception as err:
         raise RuntimeError(f"Failed to create dir for fit storage: {err}")
     # Download the file
+    print(f"attempting to download file at {fit_file_url}")
     response = requests.get(fit_file_url)
     if response.status_code == 200:
         # Save to the specified output file
-        with open(output_path, 'wb') as file:
+        with open(output_path, "wb") as file:
             file.write(response.content)
     else:
         raise Exception(f"Failed to download file, status code: {response.status_code}")
 
-def upload_activity_file(client,file_path,activity_name,activity_description):
+
+def upload_activity_file(client, file_path, activity_name, activity_description):
     """Uploads activity data to Strava."""
-    with open(file_path, 'rb') as file:
-        activity = client.upload_activity(file=file, name=activity_name, description=activity_description)
-    return activity.id
+    print("uploading activity")
+    try:
+        with open(file_path, "rb") as file:
+            activity = client.upload_activity(
+                activity_file=file,
+                name=activity_name,
+                description=activity_description,
+                data_type="fit",
+            )
+        return activity.upload_id
+    except Exception as err:
+        raise RuntimeError(f"Could not upload file: {err}")
+
 
 def get_strava_client(client_id, client_secret, refresh_token):
     access_token = get_access_token(client_id, client_secret, refresh_token)
