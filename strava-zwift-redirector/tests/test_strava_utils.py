@@ -1,6 +1,8 @@
 # tests/test_strava_utils.py
 import pytest, os
 import strava_utils
+import asyncio
+from async_module import AsyncClass
 STRAVA_SOURCE_CLIENT_ID = os.getenv('STRAVA_SOURCE_CLIENT_ID')
 STRAVA_SOURCE_CLIENT_SECRET = os.getenv('STRAVA_SOURCE_CLIENT_SECRET')
 STRAVA_SOURCE_REFRESH_TOKEN = os.getenv('STRAVA_SOURCE_REFRESH_TOKEN')
@@ -46,19 +48,22 @@ def test_fetch_activity_detail(strava_client):
     print(str(latest_activity))
     assert latest_activity.average_watts != 0
 
-def test_save_activity_file(strava_client):
+@pytest.mark.asyncio
+async def test_save_activity_file(strava_client):
     from datetime import datetime
     now = datetime.now()
 
     # Format the date and time
     formatted_date_time = now.strftime('%y%m%d%H%M%S')
-    sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}.fit"
+    sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}.gpx"
     latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
 
     *_, last_activity = latest_activities
 
     strava_utils.save_activity_file(
-        client=strava_client,
+        client_id=STRAVA_SOURCE_CLIENT_ID,
+        client_secret=STRAVA_SOURCE_CLIENT_SECRET,
+        refresh_token=STRAVA_SOURCE_REFRESH_TOKEN,
         activity_id=last_activity.id,
         output_path=sample_output_path
     )  
@@ -77,6 +82,7 @@ def test_upload_activity_file(strava_client_target,strava_client):
     sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}.fit"
     latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
 
+    #somehow this gets the last object in an iterator
     *_, last_activity = latest_activities
 
     strava_utils.save_activity_file(
@@ -89,9 +95,7 @@ def test_upload_activity_file(strava_client_target,strava_client):
 
     assert file_path.is_file(), f"File '{file_path}' does not exist."
     
-    name="TEST1"
-    desc="DESC1"
-    activity_id = strava_utils.upload_activity_file(strava_client_target,file_path,name,desc)
+    activity_id = strava_utils.upload_activity_file(strava_client_target,file_path,last_activity.name)
 
     assert activity_id is not None
     assert activity_id != 0

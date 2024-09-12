@@ -4,31 +4,36 @@ from datetime import datetime
 from stravalib import Client
 import urllib3
 from pathlib import Path
+from strava2gpx import strava2gpx
+import asyncio
 
-
-def save_activity_file(client, activity_id, output_path):
+async def save_activity_file(client_id, client_secret, refresh_token, activity_id, output_path):
     """Fetches activity data from Strava and saves it as a .fit file."""
     # activity = client.get_activity(activity_id)
 
     # Fetch the activity file (usually .fit or .tcx format)
     # https://www.strava.com/activities/{activity_id}/export_original
-    fit_file_url = f"https://www.strava.com/activities/{activity_id}/export_original"
+    #fit_file_url = f"https://www.strava.com/activities/{activity_id}/export_original"
+    #fit files can only get from login page
+
+    # create an instance of strava2gpx
+    s2g = strava2gpx(client_id, client_secret, refresh_token)
+
+    # connect to Strava API
+    await s2g.connect()
+
     try:
         Path(os.path.dirname(output_path)).mkdir(parents=True, exist_ok=True)
     except Exception as err:
         raise RuntimeError(f"Failed to create dir for fit storage: {err}")
     # Download the file
-    print(f"attempting to download file at {fit_file_url}")
-    response = requests.get(fit_file_url)
-    if response.status_code == 200:
-        # Save to the specified output file
-        with open(output_path, "wb") as file:
-            file.write(response.content)
-    else:
-        raise Exception(f"Failed to download file, status code: {response.status_code}")
+    print(f"attempting to download file")
+    # write activity to output.gpx by activity id
+    await s2g.write_to_gpx(activity_id, output_path)
 
+    print(f"file at: {output_path}")
 
-def upload_activity_file(client, file_path, activity_name, activity_description):
+def upload_activity_file(client, file_path, activity_name):
     """Uploads activity data to Strava."""
     print("uploading activity")
     try:
@@ -36,10 +41,14 @@ def upload_activity_file(client, file_path, activity_name, activity_description)
             activity = client.upload_activity(
                 activity_file=file,
                 name=activity_name,
-                description=activity_description,
-                data_type="fit",
+                description="auto uploaded from zwift redirector",
+                data_type="gpx"
+                # activity_type="VirtualRide",
+                # trainer=1
             )
-        return activity.upload_id
+        detailed_activity = activity.wait()
+        print(f"uploaded activity: {str(detailed_activity.name)}")
+        return detailed_activity.upload_id
     except Exception as err:
         raise RuntimeError(f"Could not upload file: {err}")
 
