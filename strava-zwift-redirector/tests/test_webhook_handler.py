@@ -2,7 +2,7 @@
 import pytest, os
 from flask import Flask
 from flask.testing import FlaskClient
-from webhook_handler import handle_strava_notification, verify_webhook, subscribe_to_strava_push
+from webhook_handler import handle_strava_notification, verify_webhook
 from unittest.mock import patch
 
 @pytest.fixture
@@ -10,7 +10,6 @@ def app() -> Flask:
     app = Flask(__name__)
     app.add_url_rule('/webhook', 'webhook', handle_strava_notification, methods=['POST'])
     app.add_url_rule('/webhook', 'verify_webhook', verify_webhook, methods=['GET'])
-    app.add_url_rule('/subscribe', 'subscribe', subscribe_to_strava_push, methods=['POST'])
     return app
 
 @pytest.fixture

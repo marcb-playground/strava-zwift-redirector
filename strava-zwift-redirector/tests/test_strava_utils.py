@@ -3,7 +3,7 @@ import pytest, os
 import strava_utils
 STRAVA_SOURCE_CLIENT_ID = os.getenv('STRAVA_SOURCE_CLIENT_ID')
 STRAVA_SOURCE_CLIENT_SECRET = os.getenv('STRAVA_SOURCE_CLIENT_SECRET')
-STRAVA_SOURCE_REFRESH_TOKEN = os.getenv('STRAVA_SOURCE_REFRESH_TOKEN')
+STRAVA_SOURCE_REFRESH_TOKEN = "" #os.getenv('STRAVA_SOURCE_REFRESH_TOKEN')
 
 @pytest.fixture
 def strava_client():
@@ -18,25 +18,44 @@ def test_get_strava_client(strava_client):
 
 def test_fetch_activities(strava_client):
 
-    refresh_token = "GET FROM NEW TOKEN"
-
-    api_client = strava_utils.get_strava_client(client_id=STRAVA_SOURCE_CLIENT_ID,
-                               client_secret=STRAVA_SOURCE_CLIENT_SECRET,
-                               #refresh_token=STRAVA_SOURCE_REFRESH_TOKEN)
-                               refresh_token=refresh_token)
-
-    latest_activities = strava_utils.fetch_activities(client=api_client,limit=1)
+    
+    latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
     print(str(latest_activities))
     activity_ids = [activity.id for activity in latest_activities]
     assert len(activity_ids) == 1
+def test_fetch_activity_detail(strava_client):
+    latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
 
-def test_fetch_activity_detail():
+    *_, last_activity = latest_activities
 
-    
-    latest_activity = strava_utils.fetch_activity_detail()
-    activity = strava_utils.fetch_activity(strava_client, 123)
-    print(str(activity))
-    assert activity['average_watts'] != 0
+    latest_activity = strava_utils.fetch_activity_detail(
+        client=strava_client,
+        activity_id=last_activity.id
+    )
+    print(str(latest_activity))
+    assert latest_activity.average_watts != 0
+
+def test_fetch_activity_file(strava_client):
+    from datetime import datetime
+    now = datetime.now()
+
+    # Format the date and time
+    formatted_date_time = now.strftime('%y%m%d%H%M%S')
+    sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}.fit"
+    latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
+
+    *_, last_activity = latest_activities
+
+    strava_utils.save_activity_file(
+        client=strava_client,
+        activity_id=last_activity.id,
+        output_path=sample_output_path
+    )  
+    from pathlib import Path
+    file_path = Path(sample_output_path)
+
+    assert file_path.is_file(), f"File '{file_path}' does not exist."
+
 
 def test_get_refresh_token():
     ## TO FIX!!
