@@ -2,7 +2,8 @@
 import pytest, os
 import strava_utils
 import asyncio
-from async_module import AsyncClass
+#from async_module import AsyncClass
+import asyncio
 STRAVA_SOURCE_CLIENT_ID = os.getenv('STRAVA_SOURCE_CLIENT_ID')
 STRAVA_SOURCE_CLIENT_SECRET = os.getenv('STRAVA_SOURCE_CLIENT_SECRET')
 STRAVA_SOURCE_REFRESH_TOKEN = os.getenv('STRAVA_SOURCE_REFRESH_TOKEN')
@@ -55,12 +56,12 @@ async def test_save_activity_file(strava_client):
 
     # Format the date and time
     formatted_date_time = now.strftime('%y%m%d%H%M%S')
-    sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}.gpx"
+    sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}"
     latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
 
     *_, last_activity = latest_activities
 
-    strava_utils.save_activity_file(
+    await strava_utils.save_activity_file(
         client_id=STRAVA_SOURCE_CLIENT_ID,
         client_secret=STRAVA_SOURCE_CLIENT_SECRET,
         refresh_token=STRAVA_SOURCE_REFRESH_TOKEN,
@@ -68,30 +69,32 @@ async def test_save_activity_file(strava_client):
         output_path=sample_output_path
     )  
     from pathlib import Path
-    file_path = Path(sample_output_path)
+    file_path = Path(f"{sample_output_path}.gpx") #for some reason stravagpx lib applies ext itself
 
     assert file_path.is_file(), f"File '{file_path}' does not exist."
 
-
-def test_upload_activity_file(strava_client_target,strava_client):
+@pytest.mark.asyncio
+async def  test_upload_activity_file(strava_client_target,strava_client):
     from datetime import datetime
     now = datetime.now()
 
     # Format the date and time
     formatted_date_time = now.strftime('%y%m%d%H%M%S')
-    sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}.fit"
-    latest_activities = strava_utils.fetch_activities(client=strava_client,limit=1)
+    sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}"
+    latest_activities = strava_utils.fetch_activities(client=strava_client,limit=2)
 
     #somehow this gets the last object in an iterator
     *_, last_activity = latest_activities
 
-    strava_utils.save_activity_file(
-        client=strava_client_target,
+    await strava_utils.save_activity_file(
+        client_id=STRAVA_SOURCE_CLIENT_ID,
+        client_secret=STRAVA_SOURCE_CLIENT_SECRET,
+        refresh_token=STRAVA_SOURCE_REFRESH_TOKEN,
         activity_id=last_activity.id,
         output_path=sample_output_path
     )  
     from pathlib import Path
-    file_path = Path(sample_output_path)
+    file_path = Path(f"{sample_output_path}.gpx")
 
     assert file_path.is_file(), f"File '{file_path}' does not exist."
     

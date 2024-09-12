@@ -32,6 +32,7 @@ async def save_activity_file(client_id, client_secret, refresh_token, activity_i
     await s2g.write_to_gpx(activity_id, output_path)
 
     print(f"file at: {output_path}")
+    return output_path
 
 def upload_activity_file(client, file_path, activity_name):
     """Uploads activity data to Strava."""
