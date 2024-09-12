@@ -1,5 +1,5 @@
 # strava_utils.py
-import requests
+import requests, os
 from datetime import datetime
 from stravalib import Client
 import urllib3
@@ -10,11 +10,10 @@ def save_activity_file(client, activity_id, output_path):
     activity = client.get_activity(activity_id)
     
     # Fetch the activity file (usually .fit or .tcx format)
-    fit_file_url = activity.streams.get('fit', None)
-    if not fit_file_url:
-        raise ValueError("No FIT file URL found for the activity.")
+    #https://www.strava.com/activities/{activity_id}/export_original
+    fit_file_url = f"https://www.strava.com/activities/{activity_id}/export_original"
     try:
-        Path(output_path).mkdir(parents=True, exist_ok=True)
+        Path(os.path.dirname(output_path)).mkdir(parents=True, exist_ok=True)
     except Exception as err:
         raise RuntimeError(f"Failed to create dir for fit storage: {err}")
     # Download the file
@@ -26,7 +25,11 @@ def save_activity_file(client, activity_id, output_path):
     else:
         raise Exception(f"Failed to download file, status code: {response.status_code}")
 
-
+def upload_activity_file(client,file_path,activity_name,activity_description):
+    """Uploads activity data to Strava."""
+    with open(file_path, 'rb') as file:
+        activity = client.upload_activity(file=file, name=activity_name, description=activity_description)
+    return activity.id
 
 def get_strava_client(client_id, client_secret, refresh_token):
     access_token = get_access_token(client_id, client_secret, refresh_token)
@@ -36,6 +39,7 @@ def get_strava_client(client_id, client_secret, refresh_token):
 
 
 def get_refresh_token_from_auth_code(client_id, client_secret, auth_code):
+    """to get auth code https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all"""
     urllib3.disable_warnings()
     print("getting client token")
     auth_url = "https://www.strava.com/oauth/token"

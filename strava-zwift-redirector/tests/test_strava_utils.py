@@ -3,7 +3,11 @@ import pytest, os
 import strava_utils
 STRAVA_SOURCE_CLIENT_ID = os.getenv('STRAVA_SOURCE_CLIENT_ID')
 STRAVA_SOURCE_CLIENT_SECRET = os.getenv('STRAVA_SOURCE_CLIENT_SECRET')
-STRAVA_SOURCE_REFRESH_TOKEN = "" #os.getenv('STRAVA_SOURCE_REFRESH_TOKEN')
+STRAVA_SOURCE_REFRESH_TOKEN = os.getenv('STRAVA_SOURCE_REFRESH_TOKEN')
+
+STRAVA_TARGET_CLIENT_ID = os.getenv('STRAVA_TARGET_CLIENT_ID')
+STRAVA_TARGET_CLIENT_SECRET = os.getenv('STRAVA_TARGET_CLIENT_SECRET')
+STRAVA_TARGET_REFRESH_TOKEN = os.getenv('STRAVA_TARGET_REFRESH_TOKEN')
 
 @pytest.fixture
 def strava_client():
@@ -11,7 +15,13 @@ def strava_client():
     return strava_utils.get_strava_client(client_id=STRAVA_SOURCE_CLIENT_ID,
                                client_secret=STRAVA_SOURCE_CLIENT_SECRET,
                                refresh_token=STRAVA_SOURCE_REFRESH_TOKEN)
-    
+
+@pytest.fixture
+def strava_client_target():
+    return strava_utils.get_strava_client(client_id=STRAVA_TARGET_CLIENT_ID,
+                               client_secret=STRAVA_TARGET_CLIENT_SECRET,
+                               refresh_token=STRAVA_TARGET_REFRESH_TOKEN)
+
 def test_get_strava_client(strava_client):
     
     assert strava_client.access_token is not None
@@ -35,7 +45,7 @@ def test_fetch_activity_detail(strava_client):
     print(str(latest_activity))
     assert latest_activity.average_watts != 0
 
-def test_fetch_activity_file(strava_client):
+def test_save_activity_file(strava_client):
     from datetime import datetime
     now = datetime.now()
 
@@ -57,11 +67,22 @@ def test_fetch_activity_file(strava_client):
     assert file_path.is_file(), f"File '{file_path}' does not exist."
 
 
+def test_upload_activity_file(strava_client_target):
+    upload_file_path = "/tmp/athlete_fit_file_240912145647.fit"
+    name="TEST1"
+    desc="DESC1"
+    activity_id = strava_utils.upload_activity_file(strava_client_target,upload_file_path,name,desc)
+
+    assert activity_id is not None
+    assert activity_id != 0
+
 def test_get_refresh_token():
     ## TO FIX!!
     """
     Need to authorize scope 
-    https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
+    source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
+    134606
+    target: https://www.strava.com/oauth/authorize?client_id=134606&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write
     """
     auth_code = "get auth code from above URI to reset a new auth code"
 
