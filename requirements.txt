@@ -1,6 +1,0 @@
-Flask
-requests
-stravalib
-strava2gpx
-pytest-asyncio
-pytest
