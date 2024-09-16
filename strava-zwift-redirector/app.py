@@ -18,10 +18,12 @@ source_client = get_strava_client(client_id=STRAVA_SOURCE_CLIENT_ID,
                                client_secret=STRAVA_SOURCE_CLIENT_SECRET,
                                refresh_token=STRAVA_SOURCE_REFRESH_TOKEN)
 
-@app.route('/strava_notification', methods=['POST'])
+
+
+@app.route('/', methods=['POST'])
 def strava_notification():
-    data = request.json
-    return handle_strava_notification(data, source_client, STRAVA_DESTINATION_ACCESS_TOKEN, WATTAGE_THRESHOLD)
+    
+    return jsonify({'hello': 'world'}), 200
 
 @app.route('/strava_notification', methods=['GET'])
 def verify():

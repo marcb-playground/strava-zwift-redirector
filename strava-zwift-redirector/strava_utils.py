@@ -7,6 +7,9 @@ from pathlib import Path
 from strava2gpx import strava2gpx
 import asyncio
 
+
+
+
 async def save_activity_file(client_id, client_secret, refresh_token, activity_id, output_path):
     """Fetches activity data from Strava and saves it as a .fit file."""
     # activity = client.get_activity(activity_id)
