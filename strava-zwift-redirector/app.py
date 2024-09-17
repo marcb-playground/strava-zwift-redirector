@@ -20,10 +20,9 @@ source_client = get_strava_client(client_id=STRAVA_SOURCE_CLIENT_ID,
 
 
 
-@app.route('/', methods=['POST'])
-def strava_notification():
-    
-    return jsonify({'hello': 'world'}), 200
+@app.route('/')
+def home():
+    return 'Hello, World!'
 
 @app.route('/strava_notification', methods=['GET'])
 def verify():
