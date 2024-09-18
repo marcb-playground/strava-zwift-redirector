@@ -18,6 +18,12 @@ def test_get_athlete(strava_client_source):
     athlete = strava_client_source.get_athlete()
     assert athlete.firstname != None
 
+def test_get_activities(strava_client_source):
+    latest_activities = strava_client_source.get_activities(limit=1)
+    print(str(latest_activities))
+    activity_ids = [activity.id for activity in latest_activities]
+    assert len(activity_ids) == 1
+
 @pytest.mark.asyncio
 async def test_upload_activity_file(strava_client_source, strava_client_target):
     from datetime import datetime

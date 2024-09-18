@@ -15,7 +15,7 @@ STRAVA_TARGET_REFRESH_TOKEN = os.getenv("STRAVA_TARGET_REFRESH_TOKEN")
 
 
 @pytest.fixture
-def strava_client():
+def strava_client_source():
 
     return strava_utils.get_strava_client(
         client_id=STRAVA_SOURCE_CLIENT_ID,
@@ -33,29 +33,50 @@ def strava_client_target():
     )
 
 
-def test_get_strava_client(strava_client):
+def test_get_strava_client(strava_client_source):
 
-    assert strava_client.access_token is not None
+    assert strava_client_source.access_token is not None
 
 
-def test_fetch_activities(strava_client):
+def test_fetch_activities(strava_client_source):
 
-    latest_activities = strava_utils.fetch_activities(client=strava_client, limit=1)
+    latest_activities = strava_utils.fetch_activities(
+        client=strava_client_source, limit=1
+    )
     print(str(latest_activities))
     activity_ids = [activity.id for activity in latest_activities]
     assert len(activity_ids) == 1
 
 
-def test_fetch_activity_detail(strava_client):
-    latest_activities = strava_utils.fetch_activities(client=strava_client, limit=1)
+def test_fetch_activity_detail(strava_client_source):
+    latest_activities = strava_utils.fetch_activities(
+        client=strava_client_source, limit=1
+    )
 
     *_, last_activity = latest_activities
 
     latest_activity = strava_utils.fetch_activity_detail(
-        client=strava_client, activity_id=last_activity.id
+        client=strava_client_source, activity_id=last_activity.id
     )
     print(str(latest_activity))
     assert latest_activity.average_watts != 0
+
+
+@pytest.mark.asyncio
+async def test_move_activity_to_user(strava_client_source, strava_client_target):
+    latest_activities = strava_utils.fetch_activities(
+        client=strava_client_source, limit=2
+    )
+
+    *_, source_activity = latest_activities
+    new_activity_id = strava_utils.move_activity_to_user(
+        source_client=strava_client_source,
+        source_activity_id=source_activity.id,
+        target_client=strava_client_target,
+        wattage_threshold=100,
+    )
+
+    assert new_activity_id is not None
 
 
 @pytest.mark.asyncio
@@ -85,7 +106,6 @@ async def test_save_activity_file(strava_client):
     )  # for some reason stravagpx lib applies ext itself
 
     assert file_path.is_file(), f"File '{file_path}' does not exist."
-
 
 
 def test_get_refresh_token_source():
@@ -150,7 +170,7 @@ def test_get_access_token():
     assert access_token is not None
 
 
-def test_subscribe_to_strava_push(strava_client):
+def test_subscribe_to_strava_push(strava_client_source):
     STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL = os.getenv("WEBHOOK_CALLBACK_URL")
     subscription_url = "https://www.strava.com/api/v3/push_subscriptions"
     try:

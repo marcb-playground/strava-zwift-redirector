@@ -6,7 +6,50 @@ import urllib3
 from pathlib import Path
 from strava2gpx import strava2gpx
 import asyncio
+from datetime import datetime
+from .xml_utils import move_watts_to_power
 
+async def move_activity_to_user(source_client,source_activity_id,target_client,wattage_threshold):
+    """Take an activity from source client, upload it to target and delete if it meets threshold"""
+
+    print(f"getting source activity {source_activity_id}")
+    activity_in_scope = source_client.stravalib_client.get_activity(source_activity_id)
+
+    if activity_in_scope.average_watts < wattage_threshold:
+        print(f"detected activity under {wattage_threshold} so will try to move to user and delete")
+         
+        now = datetime.now()
+
+        # Format the date and time
+        formatted_date_time = now.strftime("%y%m%d%H%M%S")
+        tmp_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}"
+
+        await save_activity_file(
+            client_id=source_client.client_id,
+            client_secret=source_client.client_secret,
+            refresh_token=source_client.client_refresh_token,
+            activity_id=activity_in_scope.id,
+            output_path=tmp_output_path,
+        )
+        
+
+        file_path = Path(f"{tmp_output_path}.gpx")
+
+        assert file_path.is_file(), f"File '{file_path}' does not exist."
+        move_watts_to_power(
+            file_source_path=file_path, file_target_path=file_path
+        )
+        new_activity_id = upload_activity_file(
+            target_client, file_path, activity_in_scope.name
+        )
+        
+        if new_activity_id is not None:
+            print("detected new activity upload successfull. cleaning up from source")
+            source_client.stravalib_client.delete_activity(source_activity_id)
+            return new_activity_id
+    else:
+        print("activity did not meet threshold, not moving")
+        return None
 
 
 
@@ -38,7 +81,7 @@ async def save_activity_file(client_id, client_secret, refresh_token, activity_i
     return output_path
 
 def upload_activity_file(client, file_path, activity_name):
-    """Uploads activity data to Strava."""
+    """Uploads activity data to Strava to given stravalib client."""
     print("uploading activity")
     try:
         with open(file_path, "rb") as file:

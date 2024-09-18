@@ -31,5 +31,10 @@ class StravaClient():
     
     def get_athlete(self, athlete_id=None):
 
+        athlete = self.stravalib_client.get_athlete(athlete_id=athlete_id)
+
+        return athlete
     
-        return self.stravalib_client.get_athlete(athlete_id)
+    def get_activities(self, limit=1):
+        activities = self.stravalib_client.get_activities(limit=limit)
+        return activities

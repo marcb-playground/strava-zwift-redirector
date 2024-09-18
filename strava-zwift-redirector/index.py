@@ -4,8 +4,8 @@ import os
 from .strava_client import StravaClient
 #import strava_utils
 
-# from strava_utils import get_strava_client, subscribe_to_strava_push
-# from webhook_handler import handle_strava_notification, verify_webhook
+from .strava_utils import get_strava_client, subscribe_to_strava_push
+from .webhook_handler import handle_strava_notification, verify_webhook
 
 
 app = Flask(__name__)
