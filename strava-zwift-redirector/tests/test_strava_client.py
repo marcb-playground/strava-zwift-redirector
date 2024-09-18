@@ -3,16 +3,20 @@ import strava_utils
 
 import asyncio
 import xml_utils
-import strava_client
+from strava_client import StravaClient
 from pathlib import Path
 
 @pytest.fixture
 def strava_client_source():
-    return strava_client.StravaClient(client_for="source")
+    return StravaClient(client_for="source")
 
+@pytest.fixture
 def strava_client_target():
-    return strava_client.StravaClient(client_for="target")
+    return StravaClient(client_for="target")
 
+def test_get_athlete(strava_client_source):
+    athlete = strava_client_source.get_athlete()
+    assert athlete.firstname != None
 
 @pytest.mark.asyncio
 async def test_upload_activity_file(strava_client_source, strava_client_target):
@@ -23,7 +27,7 @@ async def test_upload_activity_file(strava_client_source, strava_client_target):
     # Format the date and time
     formatted_date_time = now.strftime("%y%m%d%H%M%S")
     sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}"
-    latest_activities = strava_utils.fetch_activities(client=strava_client, limit=1)
+    latest_activities = strava_utils.fetch_activities(client=strava_client_source, limit=1)
 
     # somehow this gets the last object in an iterator
     *_, last_activity = latest_activities
