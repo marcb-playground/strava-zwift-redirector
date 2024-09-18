@@ -2,7 +2,7 @@
     "rewrites": [
       {
         "source": "/(.*)",
-        "destination": "/strava-zwift-redirector/app"
+        "destination": "/strava-zwift-redirector/index"
       }
     ]
   }
