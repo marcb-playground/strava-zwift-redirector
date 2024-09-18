@@ -4,4 +4,3 @@ stravalib
 strava2gpx
 pytest-asyncio
 pytest
-requests

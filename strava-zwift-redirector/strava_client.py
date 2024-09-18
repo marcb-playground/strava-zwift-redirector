@@ -1,4 +1,6 @@
 import os
+import stravalib
+import strava_utils
 class StravaClient(client_for="source"):
     client_id= None
     client_secret=None
@@ -15,7 +17,11 @@ class StravaClient(client_for="source"):
             client_id = os.getenv("STRAVA_TARGET_CLIENT_ID")
             client_secret = os.getenv("STRAVA_TARGET_CLIENT_SECRET")
             client_refresh_token = os.getenv("STRAVA_TARGET_REFRESH_TOKEN")
+
         else:
             raise Exception("need to know for which user")
 
-        
+        access_token = strava_utils.get_access_token(client_id, client_secret, client_refresh_token)
+        print("getting strava client")
+        client = stravalib.Client(access_token=access_token)
+        return client
