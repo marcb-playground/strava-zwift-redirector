@@ -1,8 +1,14 @@
 {
-    "rewrites": [
+  "version": 2,
+  "builds": [
       {
-        "source": "/(.*)",
-        "destination": "/strava-zwift-redirector/index.py"
+          "src": "/strava-zwift-redirector/index.py",
+          "use": "@vercel/python"
       }
-    ]
-  }
+  ],
+  "routes": [
+      {
+          "src": "(.*)",
+          "dest": "/strava-zwift-redirector/main.py"
+      }
+  ]}
