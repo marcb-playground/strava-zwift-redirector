@@ -33,12 +33,13 @@ def client():
     return str(source_client.stravalib_client.get_athlete().firstname)
 
 
-# @app.route('/strava_notification', methods=['GET'])
-# def verify():
-#     hub_mode = request.args.get('hub.mode')
-#     hub_challenge = request.args.get('hub.challenge')
-#     hub_verify_token = request.args.get('hub.verify_token')
-#     return verify_webhook(hub_mode, hub_challenge, hub_verify_token, source_client)
+@app.route('/strava-notification', methods=['GET'])
+def verify():
+    source_client = StravaClient(client_for="source")
+    hub_mode = request.args.get('hub.mode')
+    hub_challenge = request.args.get('hub.challenge')
+    hub_verify_token = request.args.get('hub.verify_token')
+    return verify_webhook(hub_mode, hub_challenge, hub_verify_token, source_client)
 
 # @app.route('/subscribe', methods=['POST'])
 # def subscribe():
