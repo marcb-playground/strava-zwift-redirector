@@ -9,6 +9,6 @@
   "routes": [
       {
           "src": "(.*)",
-          "dest": "/strava-zwift-redirector/index.py"
+          "dest": "/strava-zwift-redirector/main.py"
       }
   ]}
