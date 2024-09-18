@@ -1,6 +1,6 @@
 import os
 import stravalib
-from strava_utils import get_access_token
+from .strava_utils import get_access_token
 
 class StravaClient():
     client_id= None
