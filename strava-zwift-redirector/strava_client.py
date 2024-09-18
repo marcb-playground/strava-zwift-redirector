@@ -1,7 +1,8 @@
 import os
 import stravalib
-import strava_utils
-class StravaClient(client_for="source"):
+from . import strava_utils
+
+class StravaClient():
     client_id= None
     client_secret=None
     client_refresh_token = None
