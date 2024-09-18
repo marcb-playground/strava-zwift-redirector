@@ -14,7 +14,7 @@ app = Flask(__name__)
 # STRAVA_SOURCE_CLIENT_ID = os.getenv("STRAVA_SOURCE_CLIENT_ID")
 # STRAVA_SOURCE_CLIENT_SECRET = os.getenv("STRAVA_SOURCE_CLIENT_SECRET")
 # STRAVA_SOURCE_REFRESH_TOKEN = os.getenv("STRAVA_SOURCE_REFRESH_TOKEN")
-# STRAVA_DESTINATION_ACCESS_TOKEN = os.getenv('STRAVA_DESTINATION_ACCESS_TOKEN')
+
 WATTAGE_THRESHOLD = float(100)  # Default threshold
 STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL = os.getenv(
     "WEBHOOK_CALLBACK_URL"
@@ -26,11 +26,11 @@ def home():
     return "Hello, World!"
 
 
-@app.route("/strava_client_info")
+@app.route("/strava-client-info")
 def client():
 
     source_client = StravaClient(client_for="source")
-    return str(source_client.get_athlete().firstname)
+    return str(source_client.stravalib_client.get_athlete().firstname)
 
 
 # @app.route('/strava_notification', methods=['GET'])

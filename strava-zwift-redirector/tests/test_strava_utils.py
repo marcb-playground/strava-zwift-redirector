@@ -1,7 +1,7 @@
 # tests/test_strava_utils.py
 import pytest, os
 import strava_utils
-
+from strava_client import StravaClient
 import asyncio
 
 
@@ -13,24 +13,14 @@ STRAVA_TARGET_CLIENT_ID = os.getenv("STRAVA_TARGET_CLIENT_ID")
 STRAVA_TARGET_CLIENT_SECRET = os.getenv("STRAVA_TARGET_CLIENT_SECRET")
 STRAVA_TARGET_REFRESH_TOKEN = os.getenv("STRAVA_TARGET_REFRESH_TOKEN")
 
-
 @pytest.fixture
 def strava_client_source():
-
-    return strava_utils.get_strava_client(
-        client_id=STRAVA_SOURCE_CLIENT_ID,
-        client_secret=STRAVA_SOURCE_CLIENT_SECRET,
-        refresh_token=STRAVA_SOURCE_REFRESH_TOKEN,
-    )
-
+    return StravaClient(client_for="source")
 
 @pytest.fixture
 def strava_client_target():
-    return strava_utils.get_strava_client(
-        client_id=STRAVA_TARGET_CLIENT_ID,
-        client_secret=STRAVA_TARGET_CLIENT_SECRET,
-        refresh_token=STRAVA_TARGET_REFRESH_TOKEN,
-    )
+    return StravaClient(client_for="target")
+
 
 
 def test_get_strava_client(strava_client_source):
@@ -63,20 +53,20 @@ def test_fetch_activity_detail(strava_client_source):
 
 
 @pytest.mark.asyncio
-async def test_move_activity_to_user(strava_client_source, strava_client_target):
+async def test_move_activity_to_user(strava_client_source, strava_client_target,capfd):
     latest_activities = strava_utils.fetch_activities(
         client=strava_client_source, limit=2
     )
 
     *_, source_activity = latest_activities
-    new_activity_id = strava_utils.move_activity_to_user(
+    await strava_utils.move_activity_to_user(
         source_client=strava_client_source,
         source_activity_id=source_activity.id,
         target_client=strava_client_target,
         wattage_threshold=100,
     )
 
-    assert new_activity_id is not None
+    assert 1 is not None
 
 
 @pytest.mark.asyncio

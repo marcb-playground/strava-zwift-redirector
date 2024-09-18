@@ -7,16 +7,19 @@ from pathlib import Path
 from strava2gpx import strava2gpx
 import asyncio
 from datetime import datetime
-from .xml_utils import move_watts_to_power
+from xml_utils import move_watts_to_power
+import logging
+
+logger = logging.getLogger(__name__)
 
 async def move_activity_to_user(source_client,source_activity_id,target_client,wattage_threshold):
     """Take an activity from source client, upload it to target and delete if it meets threshold"""
 
-    print(f"getting source activity {source_activity_id}")
+    logger.info(f"getting source activity {source_activity_id}")
     activity_in_scope = source_client.stravalib_client.get_activity(source_activity_id)
 
     if activity_in_scope.average_watts < wattage_threshold:
-        print(f"detected activity under {wattage_threshold} so will try to move to user and delete")
+        logger.info(f"detected activity under {wattage_threshold} so will try to move to user and delete")
          
         now = datetime.now()
 
@@ -40,13 +43,17 @@ async def move_activity_to_user(source_client,source_activity_id,target_client,w
             file_source_path=file_path, file_target_path=file_path
         )
         new_activity_id = upload_activity_file(
-            target_client, file_path, activity_in_scope.name
+            target_client.stravalib_client, file_path, activity_in_scope.name
         )
         
         if new_activity_id is not None:
-            print("detected new activity upload successfull. cleaning up from source")
-            source_client.stravalib_client.delete_activity(source_activity_id)
+            logger.info("detected new activity upload successfull. need to delete from source")
+            # SHOULD CLEANUP TEMP FILE HERE TOO
+            # strava removed the delete from API so need to do manually
+            #source_client.stravalib_client.delete_activity(source_activity_id)
             return new_activity_id
+        else:
+            raise Exception(f"Issue uploading {activity_in_scope.name} {file_path}")
     else:
         print("activity did not meet threshold, not moving")
         return None
@@ -63,6 +70,7 @@ async def save_activity_file(client_id, client_secret, refresh_token, activity_i
     #fit files can only get from login page
 
     # create an instance of strava2gpx
+    logger.info("attempting to create gpx file")
     s2g = strava2gpx(client_id, client_secret, refresh_token)
 
     # connect to Strava API
@@ -82,7 +90,7 @@ async def save_activity_file(client_id, client_secret, refresh_token, activity_i
 
 def upload_activity_file(client, file_path, activity_name):
     """Uploads activity data to Strava to given stravalib client."""
-    print("uploading activity")
+    logger.info(f"uploading activity from {file_path}")
     try:
         with open(file_path, "rb") as file:
             activity = client.upload_activity(
@@ -94,7 +102,7 @@ def upload_activity_file(client, file_path, activity_name):
                 # trainer=1
             )
         detailed_activity = activity.wait()
-        print(f"uploaded activity: {str(detailed_activity.name)}")
+        logger.info(f"uploaded activity: {str(detailed_activity.name)}")
         return detailed_activity.upload_id
     except Exception as err:
         raise RuntimeError(f"Could not upload file: {err}")
