@@ -226,7 +226,7 @@ def fetch_activities(client, limit=10):
 
 def subscribe_to_strava_push(subscription_url, client_id, client_secret, callback_url):
     # headers = {'Authorization': f'Bearer {client.access_token}'}
-    random_token = "elwkmgklewklm"
+    random_token = "STRAVA-ZWIFT-REDIRECTOR"
     # subscribe
     payload = {
         "client_id": client_id,
