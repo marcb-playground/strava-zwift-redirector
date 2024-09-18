@@ -7,7 +7,7 @@ from pathlib import Path
 from strava2gpx import strava2gpx
 import asyncio
 from datetime import datetime
-from xml_utils import move_watts_to_power
+from .xml_utils import move_watts_to_power
 import logging
 
 logger = logging.getLogger(__name__)
