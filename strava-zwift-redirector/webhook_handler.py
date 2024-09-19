@@ -40,10 +40,3 @@ def handle_strava_notification(data, source_client, destination_access_token, wa
 
     return jsonify({'message': 'Wattage meets or exceeds the threshold'}), 200
 
-def verify_webhook(hub_mode, hub_challenge, hub_verify_token, client_id):
-    if hub_mode == 'subscribe':
-        print("verifying subscription")
-        return jsonify({'hub.challenge': hub_challenge}), 200
-    else:
-        print("not subscribe mode")
-        return jsonify({'error': 'Verification failed'}), 403

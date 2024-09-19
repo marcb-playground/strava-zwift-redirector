@@ -133,7 +133,7 @@ def get_refresh_token_from_auth_code(client_id, client_secret, auth_code):
     #print(response.json())
     #print()
     if response.status_code == 200:
-        print("success call: \n" + str(response.text))
+        print("success getting token")
     else:
 
         raise Exception("failed to call")
@@ -163,7 +163,7 @@ def get_refresh_token_from_refresh(client_id, client_secret, refresh_token):
     #print(response.json())
     #print()
     if response.status_code == 200:
-        print("success call: \n" + str(response.text))
+        print("success getting token")
     else:
 
         raise Exception("failed to call")
@@ -197,7 +197,7 @@ def get_access_token(client_id, client_secret, refresh_token):
     #print(response.json())
     #print()
     if response.status_code == 200:
-        print("success call: \n" + str(response.text))
+        print("success getting token")
     else:
 
         raise Exception("failed to call")
