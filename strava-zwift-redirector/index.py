@@ -8,7 +8,7 @@ from .strava_utils import (
     subscribe_to_strava_push,
     move_activity_to_user,
 )
-from .webhook_handler import handle_strava_notification, verify_webhook
+from .webhook_handler import handle_strava_notification
 import asyncio
 import threading
 # CONSTANTS
