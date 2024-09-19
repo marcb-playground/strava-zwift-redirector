@@ -2,25 +2,22 @@
 from flask import Flask, request, jsonify
 import os
 from .strava_client import StravaClient
+import logging
 #import strava_utils
-
 from .strava_utils import get_strava_client, subscribe_to_strava_push
 from .webhook_handler import handle_strava_notification, verify_webhook
 
-
-app = Flask(__name__)
-
-# Load environment variables
-# STRAVA_SOURCE_CLIENT_ID = os.getenv("STRAVA_SOURCE_CLIENT_ID")
-# STRAVA_SOURCE_CLIENT_SECRET = os.getenv("STRAVA_SOURCE_CLIENT_SECRET")
-# STRAVA_SOURCE_REFRESH_TOKEN = os.getenv("STRAVA_SOURCE_REFRESH_TOKEN")
-
+# CONSTANTS
 WATTAGE_THRESHOLD = float(100)  # Default threshold
 STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL = "https://strava-zwift-redirector.vercel.app/strava-notification"  # e.g., "https://yourdomain.com/webhook"
+
+app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
 
 @app.route("/")
 def home():
+    logger.info("main page visited")
     return "Hello, World!"
 
 
@@ -28,7 +25,9 @@ def home():
 def client():
 
     source_client = StravaClient(client_for="source")
-    return str(source_client.stravalib_client.get_athlete().firstname)
+    athlete_firstname = str(source_client.stravalib_client.get_athlete().firstname)
+    logger.info(f"checked {athlete_firstname}")
+    return jsonify({'athlete firstname': athlete_firstname}), 200
 
 
 @app.route('/strava-notification', methods=['GET'])
@@ -41,8 +40,14 @@ def verify():
 
 @app.route('/strava-notification', methods=['POST'])
 def process_notification():
-    #
-    print("post")
+    
+    try:
+        object_type = request.args.get('object_type') #should be activity
+        object_id = request.args.get('object_id') #activity id to pass for transfer
+        aspect_type = request.args.get('aspect_type') #we want only for create
+    except RuntimeError as err:
+        return jsonify({'failed to parse webhook error ': str(err)}), 500
+        
 
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
