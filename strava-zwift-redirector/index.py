@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 @app.route("/")
 def home():
-    logger.info("main page visited")
+    app.logger.info("main page visited")
     return "Hello, World!"
 
 
@@ -26,12 +26,13 @@ def client():
 
     source_client = StravaClient(client_for="source")
     athlete_firstname = str(source_client.stravalib_client.get_athlete().firstname)
-    logger.info(f"checked {athlete_firstname}")
+    app.logger.info(f"checked {athlete_firstname}")
     return jsonify({'athlete firstname': athlete_firstname}), 200
 
 
 @app.route('/strava-notification', methods=['GET'])
 def verify():
+    app.logger.info(f"callback GET for subscription challenge initiated ")
     source_client = StravaClient(client_for="source")
     hub_mode = request.args.get('hub.mode')
     hub_challenge = request.args.get('hub.challenge')
@@ -53,9 +54,11 @@ def process_notification():
 def subscribe():
     source_client = StravaClient(client_for="source")
     print(f"Subscribing for {source_client.client_id}")
+    app.logger.info(f"Subscribing for {source_client.client_id}")
     subscription_url = 'https://www.strava.com/api/v3/push_subscriptions'
     return subscribe_to_strava_push(subscription_url=subscription_url,
-                                    client=source_client,
+                                    client_id=source_client.client_id,
+                                    client_secret=source_client.client_secret,
                                     callback_url= STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL)
 
 if __name__ == "__main__":

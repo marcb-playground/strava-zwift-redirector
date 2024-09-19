@@ -9,6 +9,7 @@ import asyncio
 from datetime import datetime
 from .xml_utils import move_watts_to_power
 import logging
+import jsonify
 
 logger = logging.getLogger(__name__)
 
@@ -129,8 +130,8 @@ def get_refresh_token_from_auth_code(client_id, client_secret, auth_code):
     }
     print("Requesting the token...\n")
     response = requests.post(auth_url, data=payload, verify=False)
-    print(response.json())
-    print()
+    #print(response.json())
+    #print()
     if response.status_code == 200:
         print("success call: \n" + str(response.text))
     else:
@@ -159,8 +160,8 @@ def get_refresh_token_from_refresh(client_id, client_secret, refresh_token):
     }
     print("Requesting the token...\n")
     response = requests.post(auth_url, data=payload, verify=False)
-    print(response.json())
-    print()
+    #print(response.json())
+    #print()
     if response.status_code == 200:
         print("success call: \n" + str(response.text))
     else:
@@ -193,8 +194,8 @@ def get_access_token(client_id, client_secret, refresh_token):
     }
     print("Requesting the token...\n")
     response = requests.post(auth_url, data=payload, verify=False)
-    print(response.json())
-    print()
+    #print(response.json())
+    #print()
     if response.status_code == 200:
         print("success call: \n" + str(response.text))
     else:
@@ -226,21 +227,22 @@ def fetch_activities(client, limit=10):
 
 def subscribe_to_strava_push(subscription_url, client_id, client_secret, callback_url):
     # headers = {'Authorization': f'Bearer {client.access_token}'}
-    random_token = "STRAVA-ZWIFT-REDIRECTOR"
+    verify_token = "STRAVA-ZWIFT-REDIRECTOR"
     # subscribe
     payload = {
         "client_id": client_id,
         "client_secret": client_secret,
         "callback_url": callback_url,
-        "verify_token": random_token,
+        "verify_token": verify_token,
     }
-    print("Subscribe info: " + str(payload))
+    print("Subscribing for client id: " + str(client_id))
     response = requests.post(subscription_url, data=payload)
-    print(str(response))
+    #print(str(response))
     if response.status_code == 200:
         print("success subscribe: \n" + str(response.text))
+        return jsonify({'response': response.text}), 200
     else:
-
+        print(f"failed to subscribe: {response}")
         raise Exception("failed to subscribe")
 
     # # validate
