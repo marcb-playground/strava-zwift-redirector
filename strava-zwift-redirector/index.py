@@ -81,7 +81,7 @@ def process_notification():
         return jsonify({"failed to parse webhook error ": str(err)}), 500
 
 
-@app.route("/subscribe", methods=["POST"])
+@app.route("/subscribe")
 def subscribe():
     source_client = StravaClient(client_for="source")
     print(f"Subscribing for {source_client.client_id}")
