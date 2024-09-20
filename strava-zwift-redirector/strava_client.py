@@ -21,7 +21,7 @@ class StravaClient:
         elif client_for == "target":
             self.strava_client_id = os.getenv("STRAVA_TARGET_CLIENT_ID")
             print(f" target client id: {self.strava_client_id}")
-            self.strava_client_secret = os.getenv("STRAVA_TARGET_CLIENT_SECRET")
+            self.strava_client_secret = os.getenv("STRAVA_TARGET_CLIENT_SCT")
             print(self.strava_client_secret)
             self.strava_client_refresh_token = os.getenv("STRAVA_TARGET_REFRESH_TOKEN")
             print("target info")
