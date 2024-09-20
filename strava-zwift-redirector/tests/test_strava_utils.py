@@ -52,14 +52,14 @@ def test_fetch_activity_detail(strava_client_source):
     assert latest_activity.average_watts != 0
 
 
-@pytest.mark.asyncio
-async def test_move_activity_to_user(strava_client_source, strava_client_target,capfd):
+#@pytest.mark.asyncio
+def test_move_activity_to_user(strava_client_source, strava_client_target,capfd):
     latest_activities = strava_utils.fetch_activities(
         client=strava_client_source, limit=2
     )
 
     *_, source_activity = latest_activities
-    await strava_utils.move_activity_to_user(
+    strava_utils.move_activity_to_user(
         source_client=strava_client_source,
         source_activity_id=source_activity.id,
         target_client=strava_client_target,

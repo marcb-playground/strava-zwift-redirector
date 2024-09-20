@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 import os
 from .strava_client import StravaClient
 import logging
+import time
 from .strava_utils import (
     get_strava_client,
     subscribe_to_strava_push,
@@ -33,27 +34,32 @@ def client():
     print(f"checked {athlete_firstname}")
     return jsonify({"athlete firstname": athlete_firstname}), 200
 
-
 @app.route("/switch-zwift")
-def switch_zwift():
+@app.route("/switch-zwift/<int:activities_to_skip>")
+def switch_zwift(activities_to_skip=1):
     print(f"loading source client")
     source_client = StravaClient(client_for="source")
     latest_activities = fetch_activities(
-        client=source_client, limit=1
+        client=source_client, limit=activities_to_skip
     )
     *_, last_activity = latest_activities
     print(f"last activity detected : {last_activity.name}")
     print(f"loading target client")
+
+    # try to wait to fix client id issue
     target_client = StravaClient(client_for="target")
     print(f"loaded target client")
     
-    new_activity_id = asyncio.run(move_activity_to_user(
+    new_activity_id = move_activity_to_user(
         source_client=source_client,
         source_activity_id=last_activity.id,
         target_client=target_client,
         wattage_threshold=WATTAGE_THRESHOLD,
-    ))
-    msg = f'moved activity {last_activity.name} with id {new_activity_id}'
+    )
+    if new_activity_id is not None:
+        msg = f'moved activity {last_activity.name} with id {new_activity_id}'
+    else:
+        msg = "Wattage threshold not met, did not copy over file."
     print(msg)
     return msg, 200
 

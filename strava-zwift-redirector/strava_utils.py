@@ -13,7 +13,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-async def move_activity_to_user(source_client,source_activity_id,target_client,wattage_threshold):
+def move_activity_to_user(source_client,source_activity_id,target_client,wattage_threshold):
     """Take an activity from source client, upload it to target and delete if it meets threshold"""
 
     logger.info(f"getting source activity {source_activity_id}")
@@ -28,13 +28,20 @@ async def move_activity_to_user(source_client,source_activity_id,target_client,w
         formatted_date_time = now.strftime("%y%m%d%H%M%S")
         tmp_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}"
 
-        await save_activity_file(
+        asyncio.run(save_activity_file(
             client_id=source_client.client_id,
             client_secret=source_client.client_secret,
             refresh_token=source_client.client_refresh_token,
             activity_id=activity_in_scope.id,
             output_path=tmp_output_path,
-        )
+        ))
+        # await save_activity_file(
+        #     client_id=source_client.client_id,
+        #     client_secret=source_client.client_secret,
+        #     refresh_token=source_client.client_refresh_token,
+        #     activity_id=activity_in_scope.id,
+        #     output_path=tmp_output_path,
+        # )
         
 
         file_path = Path(f"{tmp_output_path}.gpx")
@@ -43,6 +50,8 @@ async def move_activity_to_user(source_client,source_activity_id,target_client,w
         move_watts_to_power(
             file_source_path=file_path, file_target_path=file_path
         )
+
+        # this target client ends up with bad secret?
         new_activity_id = upload_activity_file(
             target_client.stravalib_client, file_path, activity_in_scope.name
         )
