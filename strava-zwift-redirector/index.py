@@ -7,6 +7,7 @@ from .strava_utils import (
     get_strava_client,
     subscribe_to_strava_push,
     move_activity_to_user,
+    fetch_activities
 )
 from .webhook_handler import handle_strava_notification
 import asyncio
@@ -33,6 +34,31 @@ def client():
     return jsonify({"athlete firstname": athlete_firstname}), 200
 
 
+@app.route("/switch-zwift")
+def switch_zwift():
+    print(f"loading source client")
+    source_client = StravaClient(client_for="source")
+    latest_activities = fetch_activities(
+        client=source_client, limit=1
+    )
+    *_, last_activity = latest_activities
+    print(f"last activity detected : {last_activity.name}")
+    print(f"loading target client")
+    target_client = StravaClient(client_for="target")
+    print(f"loaded target client")
+    
+    new_activity_id = asyncio.run(move_activity_to_user(
+        source_client=source_client,
+        source_activity_id=last_activity.id,
+        target_client=target_client,
+        wattage_threshold=WATTAGE_THRESHOLD,
+    ))
+    msg = f'moved activity {last_activity.name} with id {new_activity_id}'
+    print(msg)
+    return msg, 200
+
+
+
 @app.route("/strava-notification", methods=["GET"])
 def verify():
     print(f"callback GET for subscription challenge initiated ")
@@ -50,6 +76,7 @@ def verify():
 
 
 def run_user_activity_move(activity_id):
+    
     source_client = StravaClient(client_for="source")
     target_client = StravaClient(client_for="target")
     asyncio.run(
@@ -60,7 +87,6 @@ def run_user_activity_move(activity_id):
             wattage_threshold=WATTAGE_THRESHOLD
         )
     )
-
 
 @app.route("/strava-notification", methods=["POST"])
 def process_notification():

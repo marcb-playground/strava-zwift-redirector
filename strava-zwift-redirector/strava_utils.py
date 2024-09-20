@@ -7,9 +7,9 @@ from pathlib import Path
 from strava2gpx import strava2gpx
 import asyncio
 from datetime import datetime
-from .xml_utils import move_watts_to_power
+from xml_utils import move_watts_to_power
+import xml_utils
 import logging
-import jsonify
 
 logger = logging.getLogger(__name__)
 
@@ -192,15 +192,16 @@ def get_access_token(client_id, client_secret, refresh_token):
         "grant_type": "refresh_token",
         "f": "json",
     }
-    print("Requesting the token...\n")
+    print(str(payload))
+    print(f"Requesting the token for {client_id}...\n")
     response = requests.post(auth_url, data=payload, verify=False)
-    #print(response.json())
+    print(f"received: {response.json()}")
     #print()
     if response.status_code == 200:
         print("success getting token")
     else:
 
-        raise Exception("failed to call")
+        raise Exception(f"failed to call with response: {response}")
     try:
         access_token = response.json()["access_token"]
         expiry_ts = response.json()["expires_at"]

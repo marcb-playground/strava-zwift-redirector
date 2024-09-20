@@ -152,9 +152,9 @@ def test_get_access_token():
     refresh_token = "stored user refresh token"
 
     access_token = strava_utils.get_access_token(
-        client_id=STRAVA_SOURCE_CLIENT_ID,
-        client_secret=STRAVA_SOURCE_CLIENT_SECRET,
-        refresh_token=refresh_token,
+        client_id=STRAVA_TARGET_CLIENT_ID,
+        client_secret=STRAVA_TARGET_CLIENT_SECRET,
+        refresh_token=STRAVA_TARGET_REFRESH_TOKEN,
     )
 
     assert access_token is not None
