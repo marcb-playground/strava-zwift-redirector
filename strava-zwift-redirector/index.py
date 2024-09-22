@@ -59,7 +59,7 @@ def switch_zwift(activities_to_skip=1):
     if new_activity_id is not None:
         msg = f'moved activity {last_activity.name} with id {new_activity_id}'
     else:
-        msg = "Wattage threshold not met, did not copy over file."
+        msg = "Wattage threshold for {last_activity.name} was not met, did not copy over file."
     print(msg)
     return msg, 200
 
