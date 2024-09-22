@@ -99,6 +99,8 @@ def process_notification():
     try:
         multi_dict = request.args
         print(f"len of dict: {str(len(multi_dict))}")
+        data = request.get_json()
+        print(data)
         for key in multi_dict:
             print(multi_dict.get(key))
             print(multi_dict.getlist(key))
