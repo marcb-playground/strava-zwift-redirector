@@ -97,16 +97,16 @@ def run_user_activity_move(activity_id):
 def process_notification():
     print("received notification POST! an activity is coming in...")
     try:
-        multi_dict = request.args
-        print(f"len of dict: {str(len(multi_dict))}")
+        # multi_dict = request.args
+        # print(f"len of dict: {str(len(multi_dict))}")
         data = request.get_json()
         print(data)
-        for key in multi_dict:
-            print(multi_dict.get(key))
-            print(multi_dict.getlist(key))
-        object_type = request.args.get("object_type")  # should be activity
-        object_id = request.args.get("object_id")  # activity id to pass for transfer
-        aspect_type = request.args.get("aspect_type")  # we want only for create
+        # for key in multi_dict:
+        #     print(multi_dict.get(key))
+        #     print(multi_dict.getlist(key))
+        object_type = data["object_type"]  # should be activity
+        object_id = data["object_id"]  # activity id to pass for transfer
+        aspect_type = data["aspect_type"]  # we want only for create
         if object_id is None or object_id == 0:
             return jsonify({"error": "empty object id"}), 500
         if object_type == "activity" and aspect_type == "create":
