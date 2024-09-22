@@ -74,7 +74,7 @@ def verify():
     hub_verify_token = request.args.get("hub.verify_token")
 
     if hub_mode == "subscribe":
-        print("verifying subscription")
+        print(f"verifying subscription to {hub_verify_token} with {hub_challenge}")
         return jsonify({"hub.challenge": hub_challenge}), 200
     else:
         print("not subscribe mode")

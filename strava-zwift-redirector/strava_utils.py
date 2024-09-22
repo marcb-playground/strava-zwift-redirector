@@ -247,12 +247,12 @@ def subscribe_to_strava_push(subscription_url, client_id, client_secret, callbac
     }
     print("Subscribing for client id: " + str(client_id))
     response = requests.post(subscription_url, data=payload)
-    #print(str(response))
+    
     if response.status_code == 200:
         print("success subscribe: \n" + str(response.text))
         return jsonify({'response': response.text}), 200
     else:
-        print(f"failed to subscribe: {response}")
+        print(f"failed to subscribe: {response.text}")
         raise Exception("failed to subscribe")
 
     # # validate

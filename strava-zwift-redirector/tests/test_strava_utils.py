@@ -10,7 +10,7 @@ STRAVA_SOURCE_CLIENT_SECRET = os.getenv("STRAVA_SOURCE_CLIENT_SECRET")
 STRAVA_SOURCE_REFRESH_TOKEN = os.getenv("STRAVA_SOURCE_REFRESH_TOKEN")
 
 STRAVA_TARGET_CLIENT_ID = os.getenv("STRAVA_TARGET_CLIENT_ID")
-STRAVA_TARGET_CLIENT_SECRET = os.getenv("STRAVA_TARGET_CLIENT_SECRET")
+STRAVA_TARGET_CLIENT_SECRET = os.getenv("STRAVA_TARGET_CLIENT_SCT")
 STRAVA_TARGET_REFRESH_TOKEN = os.getenv("STRAVA_TARGET_REFRESH_TOKEN")
 
 @pytest.fixture
@@ -161,7 +161,7 @@ def test_get_access_token():
 
 
 def test_subscribe_to_strava_push(strava_client_source):
-    STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL = os.getenv("WEBHOOK_CALLBACK_URL")
+    STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL = "https://strava-zwift-redirector.vercel.app/strava-notification"
     subscription_url = "https://www.strava.com/api/v3/push_subscriptions"
     try:
         strava_utils.subscribe_to_strava_push(
