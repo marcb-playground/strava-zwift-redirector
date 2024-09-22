@@ -85,14 +85,13 @@ def run_user_activity_move(activity_id):
     
     source_client = StravaClient(client_for="source")
     target_client = StravaClient(client_for="target")
-    asyncio.run(
-        move_activity_to_user(
+    print(f"moving {activity_id} from {source_client.client_id} to {target_client.client_id}")
+    move_activity_to_user(
             source_client=source_client,
             target_client=target_client,
             source_activity_id=activity_id,
             wattage_threshold=WATTAGE_THRESHOLD
         )
-    )
 
 @app.route("/strava-notification", methods=["POST"])
 def process_notification():
@@ -101,9 +100,12 @@ def process_notification():
         object_type = request.args.get("object_type")  # should be activity
         object_id = request.args.get("object_id")  # activity id to pass for transfer
         aspect_type = request.args.get("aspect_type")  # we want only for create
+        if object_id is None or object_id == 0:
+            return jsonify({"failed to get an object ID ": str(err)}), 500
         if object_type == "activity" and aspect_type == "create":
             print(f"received activity with id: {object_id}")
-            threading.Thread(target=run_user_activity_move, args=(object_id,)).start()
+            ##threading.Thread(target=run_user_activity_move, args=(object_id,)).start()
+            run_user_activity_move(activity_id=object_id)
             return jsonify({"received activity": str(object_id)}), 200
         else:
             print(f"received PUSH that we are not processing: \n{object_type} \n {object_id} \n {aspect_type}")

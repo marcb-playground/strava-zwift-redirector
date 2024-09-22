@@ -66,7 +66,7 @@ def move_activity_to_user(source_client,source_activity_id,target_client,wattage
         else:
             raise Exception(f"Issue uploading {activity_in_scope.name} {file_path}")
     else:
-        print("activity did not meet threshold, not moving")
+        print(f"activity from source {source_activity_id} did not meet threshold, not moving")
         return None
 
 
