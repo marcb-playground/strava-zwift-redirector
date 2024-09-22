@@ -175,3 +175,17 @@ def test_subscribe_to_strava_push(strava_client_source):
     except Exception as err:
         print("test failed")
         assert 0 == 1
+
+def test_view_subscriptions():
+    subscription_url = "https://www.strava.com/api/v3/push_subscriptions"
+    try:
+        strava_utils.view_subscriptions(
+            subscription_url=subscription_url,
+            client_id=STRAVA_SOURCE_CLIENT_ID,
+            client_secret=STRAVA_SOURCE_CLIENT_SECRET
+        )
+
+        assert 1 == 1
+    except Exception as err:
+        print("test failed")
+        assert 0 == 1

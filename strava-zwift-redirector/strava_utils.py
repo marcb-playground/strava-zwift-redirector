@@ -10,6 +10,7 @@ from datetime import datetime
 from xml_utils import move_watts_to_power
 import xml_utils
 import logging
+import jsonify
 
 logger = logging.getLogger(__name__)
 
@@ -255,18 +256,15 @@ def subscribe_to_strava_push(subscription_url, client_id, client_secret, callbac
         print(f"failed to subscribe: {response.text}")
         raise Exception("failed to subscribe")
 
-    # # validate
-    # payload = {
-    #     #'hub.callback': callback_url,
-    #     'hub.mode': 'subscribe',
-    #     'hub.verify_token': random_token,
-    #     'hub.topic': ""
-    # }
-    # print("verify info: " + str(payload))
-    # response = requests.post(subscription_url, data=payload)
-
-    # if response.status_code == 200:
-    #     print(str(response))
-    #     return jsonify({'message': 'Subscription successful. Sub id ' + str(response.json()['id'])}), 200
-    # else:
-    #     return jsonify({'error': 'Failed to subscribe', 'details': response.json()}), response.status_code
+def view_subscriptions(subscription_url, client_id, client_secret):
+    payload = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+    }
+    print("Subscribing for client id: " + str(client_id))
+    response = requests.get(subscription_url, params=payload)
+    
+    if response.status_code == 200:
+        print("success subscribe: \n" + str(response.text))
+    else:
+        raise Exception(f"failed to view subscriptions {str(response.text)}")
