@@ -19,9 +19,9 @@ def move_activity_to_user(source_client,source_activity_id,target_client,wattage
 
     logger.info(f"getting source activity {source_activity_id}")
     activity_in_scope = source_client.stravalib_client.get_activity(source_activity_id)
-
-    if activity_in_scope.average_watts < wattage_threshold:
-        logger.info(f"detected activity under {wattage_threshold} so will try to move to user and delete")
+    print(f"got {activity_in_scope.name}")
+    if activity_in_scope.average_watts < wattage_threshold or "karine" in activity_in_scope.name.lower():
+        logger.info(f"detected activity under {wattage_threshold} or karine in activity name so will try to move to user and delete")
          
         now = datetime.now()
 
