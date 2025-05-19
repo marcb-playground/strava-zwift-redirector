@@ -1,6 +1,6 @@
 import pytest
-from strava_zwift_redirector.segment_finder import find_popular_segment
-from strava_zwift_redirector.strava_client import StravaClient
+from segment_finder import find_popular_segment
+from strava_client import StravaClient
 
 # Montreal's Mount Royal coordinates
 MONTREAL_MOUNT_ROYAL = (45.5196, -73.5778)

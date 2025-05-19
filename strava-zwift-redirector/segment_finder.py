@@ -1,6 +1,6 @@
 from typing import Tuple, Dict, Optional
 import requests
-from strava_zwift_redirector.strava_utils import get_strava_client
+from strava_utils import get_strava_client
 
 def find_popular_segment(client: 'StravaClient', latitude: float, longitude: float) -> Optional[Dict]:
     """
