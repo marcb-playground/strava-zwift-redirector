@@ -4,5 +4,6 @@ stravalib
 strava2gpx
 pytest-asyncio
 pytest
+pydantic-settings>=2.5.3
 requests
 jsonify

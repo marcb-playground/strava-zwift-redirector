@@ -1,14 +1,19 @@
 {
   "version": 2,
   "builds": [
-      {
-          "src": "/strava-zwift-redirector/index.py",
-          "use": "@vercel/python"
-      }
+    {
+      "src": "strava-zwift-redirector/index.py",
+      "use": "@vercel/python"
+    }
   ],
   "routes": [
-      {
-          "src": "(.*)",
-          "dest": "/strava-zwift-redirector/index.py"
-      }
-  ]}
+    {
+      "src": "/strava-notification",
+      "dest": "strava-zwift-redirector/index.py"
+    },
+    {
+      "src": "(.*)",
+      "dest": "strava-zwift-redirector/index.py"
+    }
+  ]
+}
