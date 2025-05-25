@@ -8,6 +8,7 @@ import asyncio
 STRAVA_SOURCE_CLIENT_ID = os.getenv("STRAVA_SOURCE_CLIENT_ID")
 STRAVA_SOURCE_CLIENT_SECRET = os.getenv("STRAVA_SOURCE_CLIENT_SECRET")
 STRAVA_SOURCE_REFRESH_TOKEN = os.getenv("STRAVA_SOURCE_REFRESH_TOKEN")
+STRAVA_SOURCE_CLIENT_CODE = os.getenv("STRAVA_SOURCE_CLIENT_CODE")
 
 STRAVA_TARGET_CLIENT_ID = os.getenv("STRAVA_TARGET_CLIENT_ID")
 STRAVA_TARGET_CLIENT_SECRET = os.getenv("STRAVA_TARGET_CLIENT_SCT")
@@ -101,13 +102,15 @@ async def test_save_activity_file(strava_client):
 def test_get_refresh_token_source():
     """
     Test getting refresh token for source user
+    Need to authorize scope 60066
+    source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all,read_all
     """
-    auth_code = "test_auth_code"
+    #auth_code = "test_auth_code"
     
     refresh_token = strava_utils.get_refresh_token_from_auth_code(
         client_id=os.getenv("STRAVA_SOURCE_CLIENT_ID"),
         client_secret=os.getenv("STRAVA_SOURCE_CLIENT_SECRET"),
-        auth_code=auth_code,
+        auth_code="from gui",
     )
 
     assert refresh_token is not None
@@ -115,9 +118,7 @@ def test_get_refresh_token_source():
 
 def test_get_refresh_token_target():
     """
-    Need to authorize scope
-    source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
-    134606
+    Need to authorize scope for target  134606
     target: https://www.strava.com/oauth/authorize?client_id=134606&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write,activity:read_all
     """
     auth_code = "test_auth_code"

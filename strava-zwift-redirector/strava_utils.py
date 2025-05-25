@@ -145,7 +145,10 @@ def get_refresh_token_from_auth_code(client_id, client_secret, auth_code):
     if response.status_code == 200:
         print("success getting token")
     else:
-
+        try:
+            print("Received error from API: " + response.text)
+        except Exception as err:
+            raise Exception(f"Failed to print error from response: {err}")
         raise Exception("failed to call")
     try:
         refresh_token = response.json()["refresh_token"]
