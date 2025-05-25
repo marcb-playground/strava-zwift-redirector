@@ -193,7 +193,7 @@ def get_refresh_token_from_refresh(client_id, client_secret, refresh_token):
 def get_access_token(client_id, client_secret, refresh_token):
     """
     Need to authorize scope
-    https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
+    https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all,read_all
     """
     urllib3.disable_warnings()
     print("getting client token")
