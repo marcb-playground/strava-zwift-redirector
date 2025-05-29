@@ -3,10 +3,10 @@ In order to share a Zwift account between 2 people, if the avg wattage is differ
 
 need to authorize scopes for API cal, would do via this url
 
-60066 client id source
-134606 client id target
+STRAVA_SOURCE_CLIENT_ID client id source
+STRAVA_TARGET_CLIENT_ID client id target
 
     Need to authorize scope
-    source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
-    134606
-    target: https://www.strava.com/oauth/authorize?client_id=134606&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write,activity:read_all
+    source: https://www.strava.com/oauth/authorize?client_id=STRAVA_SOURCE_CLIENT_ID&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
+    STRAVA_TARGET_CLIENT_ID
+    target: https://www.strava.com/oauth/authorize?client_id=STRAVA_TARGET_CLIENT_ID&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write,activity:read_all

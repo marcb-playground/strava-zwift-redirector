@@ -105,8 +105,8 @@ async def test_save_activity_file(strava_client_source):
 def test_get_refresh_token_source():
     """
     Test getting refresh token for source user
-    Need to authorize scope 60066
-    source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
+    Need to authorize scope STRAVA_SOURCE_CLIENT_ID
+    source: https://www.strava.com/oauth/authorize?client_id=STRAVA_SOURCE_CLIENT_ID&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
     """
     #auth_code = "test_auth_code"
     
@@ -121,8 +121,8 @@ def test_get_refresh_token_source():
 
 def test_get_refresh_token_target():
     """
-    Need to authorize scope for target  134606
-    target: https://www.strava.com/oauth/authorize?client_id=134606&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write,activity:read_all
+    Need to authorize scope for target  STRAVA_TARGET_CLIENT_ID
+    target: https://www.strava.com/oauth/authorize?client_id=STRAVA_TARGET_CLIENT_ID&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write,activity:read_all
     """
     auth_code = "test_auth_code"
     

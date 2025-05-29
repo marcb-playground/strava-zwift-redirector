@@ -127,7 +127,7 @@ def get_strava_client(client_id, client_secret, refresh_token):
 
 
 def get_refresh_token_from_auth_code(client_id, client_secret, auth_code):
-    """to get auth code https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all"""
+    """to get auth code https://www.strava.com/oauth/authorize?client_id=STRAVA_SOURCE_CLIENT_ID&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all"""
     urllib3.disable_warnings()
     print("getting client token")
     auth_url = "https://www.strava.com/oauth/token"
@@ -193,7 +193,7 @@ def get_refresh_token_from_refresh(client_id, client_secret, refresh_token):
 def get_access_token(client_id, client_secret, refresh_token):
     """
     Need to authorize scope
-    https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all,read_all
+    https://www.strava.com/oauth/authorize?client_id=STRAVA_SOURCE_CLIENT_ID&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all,read_all
     """
     urllib3.disable_warnings()
     print("getting client token")
