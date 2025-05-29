@@ -32,8 +32,8 @@ def find_popular_segment(client: 'StravaClient', latitude: float, longitude: flo
             'https://www.strava.com/api/v3/segments/explore',
             json={
                 'bounds': bounds,
-                'activity_type': 'cycling',
-                'min_cat': 1
+                #'activity_type': 'cycling',
+                #'min_cat': 1
             },
             headers={
                 'Authorization': f'Bearer {client.access_token}'

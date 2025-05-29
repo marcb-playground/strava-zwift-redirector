@@ -11,7 +11,7 @@ STRAVA_SOURCE_REFRESH_TOKEN = os.getenv("STRAVA_SOURCE_REFRESH_TOKEN")
 STRAVA_SOURCE_CLIENT_CODE = os.getenv("STRAVA_SOURCE_CLIENT_CODE")
 
 STRAVA_TARGET_CLIENT_ID = os.getenv("STRAVA_TARGET_CLIENT_ID")
-STRAVA_TARGET_CLIENT_SECRET = os.getenv("STRAVA_TARGET_CLIENT_SCT")
+STRAVA_TARGET_CLIENT_SECRET = os.getenv("STRAVA_TARGET_CLIENT_SECRET")
 STRAVA_TARGET_REFRESH_TOKEN = os.getenv("STRAVA_TARGET_REFRESH_TOKEN")
 
 @pytest.fixture
@@ -24,10 +24,13 @@ def strava_client_target():
 
 
 
-def test_get_strava_client(strava_client_source):
+def test_get_strava_client_source(strava_client_source):
 
     assert strava_client_source.access_token is not None
 
+def test_get_strava_client_target(strava_client_target):
+
+    assert strava_client_target.access_token is not None
 
 def test_fetch_activities(strava_client_source):
 
@@ -71,7 +74,7 @@ def test_move_activity_to_user(strava_client_source, strava_client_target,capfd)
 
 
 @pytest.mark.asyncio
-async def test_save_activity_file(strava_client):
+async def test_save_activity_file(strava_client_source):
     from datetime import datetime
 
     now = datetime.now()
@@ -79,7 +82,7 @@ async def test_save_activity_file(strava_client):
     # Format the date and time
     formatted_date_time = now.strftime("%y%m%d%H%M%S")
     sample_output_path = f"/tmp/athlete_fit_file_{formatted_date_time}"
-    latest_activities = strava_utils.fetch_activities(client=strava_client, limit=1)
+    latest_activities = strava_utils.fetch_activities(client=strava_client_source, limit=1)
 
     *_, last_activity = latest_activities
 
@@ -103,16 +106,16 @@ def test_get_refresh_token_source():
     """
     Test getting refresh token for source user
     Need to authorize scope 60066
-    source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all,read_all
+    source: https://www.strava.com/oauth/authorize?client_id=60066&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
     """
     #auth_code = "test_auth_code"
     
     refresh_token = strava_utils.get_refresh_token_from_auth_code(
         client_id=os.getenv("STRAVA_SOURCE_CLIENT_ID"),
         client_secret=os.getenv("STRAVA_SOURCE_CLIENT_SECRET"),
-        auth_code="from gui",
+        auth_code="REPLACE FROM SITE CODE PART",
     )
-
+    print(refresh_token)
     assert refresh_token is not None
 
 
