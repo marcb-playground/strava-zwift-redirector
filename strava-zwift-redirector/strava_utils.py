@@ -10,7 +10,7 @@ from datetime import datetime
 from xml_utils import move_watts_to_power
 import xml_utils
 import logging
-import jsonify
+from flask import jsonify
 
 logger = logging.getLogger(__name__)
 
@@ -132,19 +132,43 @@ def download_activity_fit(client_id, client_secret, refresh_token, activity_id, 
         raise RuntimeError(f"Failed to create dir for fit storage: {err}")
 
     access_token = get_access_token(client_id, client_secret, refresh_token)
-    url = f"https://www.strava.com/activities/{activity_id}/export_original"
-    headers = {"Authorization": f"Bearer {access_token}"}
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/octet-stream, */*;q=0.5",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+    }
+    params = {"format": "fit"}
+    urls = [
+        f"https://www.strava.com/api/v3/activities/{activity_id}/export_original",
+        f"https://www.strava.com/activities/{activity_id}/export_original",
+    ]
 
-    response = requests.get(url, headers=headers, stream=True, verify=False)
-    if response.status_code != 200:
+    response = None
+    for url in urls:
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            stream=True,
+            verify=False,
+            allow_redirects=True,
+            timeout=60,
+        )
+        content_type = response.headers.get("content-type", "")
+        if response.status_code == 200 and "text/html" not in content_type.lower():
+            break
+    else:
+        body = response.text[:1000] if response is not None else ""
         raise RuntimeError(
-            f"Failed to download FIT file from Strava: status={response.status_code}, body={response.text}"
+            f"Failed to download FIT file from Strava: status={response.status_code if response is not None else 'N/A'}, body={body}"
         )
 
     with open(output_path, "wb") as output_file:
         for chunk in response.iter_content(chunk_size=8192):
             if chunk:
                 output_file.write(chunk)
+
+    return output_path
 
     return output_path
 

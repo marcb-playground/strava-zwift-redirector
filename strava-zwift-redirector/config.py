@@ -22,6 +22,9 @@ class Settings(BaseSettings):
 
     # Application Configuration
     WATTAGE_THRESHOLD: float = 100.0
+    # Garmin FIT patch defaults
+    GARMIN_MANUFACTURER: int = 1
+    GARMIN_PRODUCT: int = 1836
     
     # Flask Configuration
     FLASK_ENV: str = "production"

@@ -1,17 +1,17 @@
 # app.py
 from flask import Flask, request, jsonify
 import os
-from .strava_client import StravaClient
-from .garmin_client import GarminClient
+from strava_client import StravaClient
+from garmin_client import GarminClient
 import logging
 import time
-from .strava_utils import (
+from strava_utils import (
     get_strava_client,
     subscribe_to_strava_push,
     move_activity_to_user,
     fetch_activities,
 )
-from .webhook_handler import handle_strava_notification
+from webhook_handler import handle_strava_notification
 import asyncio
 import threading
 # CONSTANTS
@@ -112,9 +112,16 @@ def process_notification():
             return jsonify({"error": "empty object id"}), 500
         if object_type == "activity" and aspect_type == "create":
             print(f"received activity with id: {object_id}")
-            ##threading.Thread(target=run_user_activity_move, args=(object_id,)).start()
-            run_user_activity_move(activity_id=object_id)
-            return jsonify({"received activity": str(object_id)}), 200
+            source_client = StravaClient(client_for="source")
+            target_client = StravaClient(client_for="target")
+            garmin_client = GarminClient()
+            return handle_strava_notification(
+                data=data,
+                source_client=source_client,
+                target_client=target_client,
+                garmin_client=garmin_client,
+                wattage_threshold=WATTAGE_THRESHOLD,
+            )
         else:
             print(f"received PUSH that we are not processing: \n{object_type} \n {object_id} \n {aspect_type}")
             return "ignoring this", 200

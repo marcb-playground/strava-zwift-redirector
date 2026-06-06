@@ -163,3 +163,5 @@ cython_debug/
 #.idea/
 .vercel
 .env.test
+# Test data for integration runs
+strava-zwift-redirector/tests/data/
