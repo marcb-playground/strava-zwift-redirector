@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     STRAVA_TARGET_CLIENT_SECRET: str
     STRAVA_TARGET_REFRESH_TOKEN: str
 
+    # Garmin Connect Configuration
+    GARMIN_CONNECT_USERNAME: str
+    GARMIN_CONNECT_PASSWORD: str
+
     # Webhook Configuration
     STRAVA_WEBHOOK_CALLBACK_URL: str = "https://strava-zwift-redirector.vercel.app/strava-notification"
     WEBHOOK_TIMEOUT: int = 30  # seconds

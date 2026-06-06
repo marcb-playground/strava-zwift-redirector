@@ -2,13 +2,14 @@
 from flask import Flask, request, jsonify
 import os
 from .strava_client import StravaClient
+from .garmin_client import GarminClient
 import logging
 import time
 from .strava_utils import (
     get_strava_client,
     subscribe_to_strava_push,
     move_activity_to_user,
-    fetch_activities
+    fetch_activities,
 )
 from .webhook_handler import handle_strava_notification
 import asyncio
@@ -133,6 +134,12 @@ def subscribe():
         client_secret=source_client.client_secret,
         callback_url=STRAVA_ACTIVITY_NOTIFICATION_CALLBACK_URL,
     )
+
+
+@app.route("/garmin-diagnostics")
+def garmin_diagnostics():
+    garmin_client = GarminClient()
+    return jsonify(garmin_client.diagnostics()), 200
 
 
 if __name__ == "__main__":

@@ -103,6 +103,9 @@ def upload_activity_file(client, file_path, activity_name):
     """Uploads activity data to Strava to given stravalib client."""
     logger.info(f"uploading activity from {file_path}")
     try:
+        if hasattr(client, "stravalib_client"):
+            client = client.stravalib_client
+
         with open(file_path, "rb") as file:
             activity = client.upload_activity(
                 activity_file=file,
@@ -117,6 +120,37 @@ def upload_activity_file(client, file_path, activity_name):
         return detailed_activity.upload_id
     except Exception as err:
         raise RuntimeError(f"Could not upload file: {err}")
+
+
+def download_activity_fit(client_id, client_secret, refresh_token, activity_id, output_path):
+    if not output_path.lower().endswith(".fit"):
+        output_path = f"{output_path}.fit"
+
+    try:
+        Path(os.path.dirname(output_path)).mkdir(parents=True, exist_ok=True)
+    except Exception as err:
+        raise RuntimeError(f"Failed to create dir for fit storage: {err}")
+
+    access_token = get_access_token(client_id, client_secret, refresh_token)
+    url = f"https://www.strava.com/activities/{activity_id}/export_original"
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    response = requests.get(url, headers=headers, stream=True, verify=False)
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Failed to download FIT file from Strava: status={response.status_code}, body={response.text}"
+        )
+
+    with open(output_path, "wb") as output_file:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                output_file.write(chunk)
+
+    return output_path
+
+
+def save_activity_fit_file(client_id, client_secret, refresh_token, activity_id, output_path):
+    return download_activity_fit(client_id, client_secret, refresh_token, activity_id, output_path)
 
 
 def get_strava_client(client_id, client_secret, refresh_token):

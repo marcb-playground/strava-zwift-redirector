@@ -2,6 +2,7 @@ Flask==3.0.3
 requests
 stravalib
 strava2gpx
+garminconnect
 pytest-asyncio
 pytest
 pydantic-settings>=2.5.3

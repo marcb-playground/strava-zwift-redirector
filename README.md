@@ -10,3 +10,10 @@ STRAVA_TARGET_CLIENT_ID client id target
     source: https://www.strava.com/oauth/authorize?client_id=STRAVA_SOURCE_CLIENT_ID&response_type=code&redirect_uri=http://localhost:8085&scope=activity:read_all
     STRAVA_TARGET_CLIENT_ID
     target: https://www.strava.com/oauth/authorize?client_id=STRAVA_TARGET_CLIENT_ID&response_type=code&redirect_uri=http://localhost:8085&scope=activity:write,activity:read_all
+
+Garmin Connect configuration
+
+    GARMIN_CONNECT_USERNAME
+    GARMIN_CONNECT_PASSWORD
+
+The app exposes a diagnostics endpoint at `/garmin-diagnostics` for health and configuration checks.
