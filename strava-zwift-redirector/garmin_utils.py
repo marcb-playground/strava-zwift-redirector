@@ -1,13 +1,64 @@
 import asyncio
-from pathlib import Path
-
-from strava_utils import download_activity_fit, save_activity_file
-from fit_utils import patch_garmin_fit_file, read_fit_file_id_values
-from config import settings as app_settings
 import shutil
 import time
+from pathlib import Path
+
+from config import settings as app_settings
+from fit_utils import patch_garmin_fit_file
+from strava_utils import download_activity_fit, save_activity_file
 from garmin_client import GarminClient
 from xml_utils import move_watts_to_power
+
+GPX_ACTIVITY_TYPE_MAP = {
+    "virtualride": "Ride",
+    "virtual_ride": "Ride",
+    "virtualrun": "Run",
+    "virtual_run": "Run",
+    "ebikeride": "Ride",
+    "indoorride": "Ride",
+    "indoor_ride": "Ride",
+    "indoorrun": "Run",
+    "indoor_run": "Run",
+    "ride": "Ride",
+    "run": "Run",
+    "walk": "Walk",
+    "hike": "Hike",
+    "other": "Other",
+}
+
+
+def _normalize_gpx_activity_type(file_path: str, activity_type: str | None = None) -> None:
+    if not file_path.lower().endswith(".gpx"):
+        return
+
+    try:
+        content = Path(file_path).read_text(encoding="utf-8")
+    except Exception:
+        return
+
+    normalized = None
+    if activity_type:
+        normalized = GPX_ACTIVITY_TYPE_MAP.get(str(activity_type).strip().lower(), None)
+    if normalized is None:
+        activity_type_value = str(activity_type).strip().lower() if activity_type is not None else None
+        if activity_type_value:
+            for src, dst in GPX_ACTIVITY_TYPE_MAP.items():
+                if src in activity_type_value:
+                    normalized = dst
+                    break
+    if normalized is None:
+        for src, dst in GPX_ACTIVITY_TYPE_MAP.items():
+            if f"<type>{src}</type>" in content:
+                normalized = dst
+                break
+
+    if normalized and f"<type>{normalized}</type>" not in content:
+        for src, dst in GPX_ACTIVITY_TYPE_MAP.items():
+            content = content.replace(f"<type>{src}</type>", f"<type>{dst}</type>")
+        try:
+            Path(file_path).write_text(content, encoding="utf-8")
+        except Exception:
+            pass
 
 
 def sync_activity_to_garmin(
@@ -19,11 +70,22 @@ def sync_activity_to_garmin(
     manufacturer: int | None = None,
     product: int | None = None,
 ) -> dict:
-    # Use shared config defaults when explicit values are not provided
     if manufacturer is None:
         manufacturer = getattr(app_settings, "GARMIN_MANUFACTURER", 1)
     if product is None:
         product = getattr(app_settings, "GARMIN_PRODUCT", 1836)
+
+    activity_type = None
+    try:
+        src_act = source_client.stravalib_client.get_activity(activity_id)
+        activity_type = getattr(src_act, "type", None) or getattr(src_act, "sport_type", None)
+        if activity_type is not None:
+            activity_type = str(activity_type).strip()
+    except Exception:
+        activity_type = None
+
+    activity_file_path = None
+    was_fit = False
 
     try:
         activity_file_path = download_activity_fit(
@@ -33,36 +95,15 @@ def sync_activity_to_garmin(
             activity_id=activity_id,
             output_path=output_path,
         )
-        # If tests/data exists in repo, save a copy of the raw downloaded file
-        try:
-            data_dir = Path(__file__).resolve().parent / "tests" / "data"
-            if data_dir.is_dir():
-                timestamp = int(time.time())
-                raw_copy = data_dir / f"input_{activity_id}_{timestamp}{Path(activity_file_path).suffix}"
-                shutil.copy(activity_file_path, raw_copy)
-        except Exception:
-            pass
-        patch_garmin_fit_file(activity_file_path, manufacturer=manufacturer, product=product)
-        # Save patched/uploaded copy if tests/data exists
-        try:
-            data_dir = Path(__file__).resolve().parent / "tests" / "data"
-            if data_dir.is_dir():
-                timestamp = int(time.time())
-                out_copy = data_dir / f"output_{activity_id}_{timestamp}{Path(activity_file_path).suffix}"
-                shutil.copy(activity_file_path, out_copy)
-        except Exception:
-            pass
-    except RuntimeError as err:
-        # Strava FIT export is not always available from the API; fallback to GPX export.
-        # strava2gpx may append a .gpx extension even if provided. Pass a
-        # base path (without .gpx) and then locate the actual created file.
+        was_fit = True
+    except RuntimeError:
         base = output_path
         if base.lower().endswith(".fit"):
             base = base[:-4]
         if base.lower().endswith(".gpx"):
             base = base[:-4]
 
-        created = asyncio.run(
+        activity_file_path = asyncio.run(
             save_activity_file(
                 client_id=source_client.client_id,
                 client_secret=source_client.client_secret,
@@ -72,92 +113,52 @@ def sync_activity_to_garmin(
             )
         )
 
-        # Try common candidate filenames the exporter might have created.
         candidates = [
-            created,
-            f"{created}.gpx",
-            f"{created}.gpx.gpx",
+            activity_file_path,
+            f"{activity_file_path}.gpx",
             f"{base}.gpx",
-            f"{base}.gpx.gpx",
         ]
-        activity_file_path = None
+        found = None
         for c in candidates:
             if Path(c).is_file():
-                activity_file_path = c
+                found = c
                 break
-
-        if activity_file_path is None:
+        if found is None:
             raise RuntimeError(f"Could not locate GPX file after export; checked: {candidates}")
+        activity_file_path = found
+        was_fit = False
 
-        move_watts_to_power(activity_file_path, activity_file_path)
+    try:
+        data_dir = Path(__file__).resolve().parent / "tests" / "data"
+        if data_dir.is_dir() and activity_file_path:
+            timestamp = int(time.time())
+            raw_copy = data_dir / f"input_{activity_id}_{timestamp}{Path(activity_file_path).suffix}"
+            shutil.copy(activity_file_path, raw_copy)
+    except Exception:
+        pass
+
+    if was_fit:
+        patch_garmin_fit_file(activity_file_path, manufacturer=manufacturer, product=product)
+    else:
+        _normalize_gpx_activity_type(activity_file_path, activity_type)
+        try:
+            move_watts_to_power(activity_file_path, activity_file_path)
+        except Exception:
+            pass
+
+    try:
+        data_dir = Path(__file__).resolve().parent / "tests" / "data"
+        if data_dir.is_dir() and activity_file_path:
+            timestamp = int(time.time())
+            out_copy = data_dir / f"output_{activity_id}_{timestamp}{Path(activity_file_path).suffix}"
+            shutil.copy(activity_file_path, out_copy)
+    except Exception:
+        pass
 
     upload_result = garmin_client.upload_activity_fit(
         activity_file_path,
         activity_name=activity_name or str(activity_id),
     )
-    # Try to set the activity type in Garmin so Training Load is computed.
-    try:
-        # Determine source activity sport (e.g., 'Ride', 'Run')
-        sport = None
-        try:
-            src_act = source_client.stravalib_client.get_activity(activity_id)
-            sport = getattr(src_act, "type", None) or getattr(src_act, "sport_type", None)
-            if sport:
-                sport = str(sport).lower()
-        except Exception:
-            sport = None
-
-        client = garmin_client._create_client()
-        try:
-            client.login()
-        except Exception:
-            pass
-
-        # Fetch available activity types from Garmin and choose a match
-        try:
-            types = client.get_activity_types()
-            chosen = None
-            if isinstance(types, list):
-                for t in types:
-                    key = str(t.get("typeKey", "")).lower()
-                    name = str(t.get("name", "")).lower()
-                    if sport and (sport in key or sport in name):
-                        chosen = t
-                        break
-            elif isinstance(types, dict):
-                # some implementations return dict of lists
-                for v in types.values():
-                    if not isinstance(v, list):
-                        continue
-                    for t in v:
-                        key = str(t.get("typeKey", "")).lower()
-                        name = str(t.get("name", "")).lower()
-                        if sport and (sport in key or sport in name):
-                            chosen = t
-                            break
-                    if chosen:
-                        break
-
-            if chosen:
-                # Find the most recent activity id (assume it's the one we uploaded)
-                last = client.get_last_activity()
-                if last and isinstance(last, dict):
-                    activity_id_garmin = last.get("activityId") or last.get("activityIdLocal") or last.get("activity_id") or last.get("id")
-                    if activity_id_garmin:
-                        try:
-                            client.set_activity_type(
-                                str(activity_id_garmin),
-                                int(chosen.get("typeId")),
-                                str(chosen.get("typeKey")),
-                                int(chosen.get("parentTypeId") or 0),
-                            )
-                        except Exception:
-                            pass
-        except Exception:
-            pass
-    except Exception:
-        # never raise from activity-type patching
-        pass
 
     return {
         "result": upload_result,
