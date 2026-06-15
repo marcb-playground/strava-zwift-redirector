@@ -45,6 +45,10 @@ def process_strava_activity(data, source_client, target_client, garmin_client, w
             activity_id=activity_id,
             output_path=output_path,
             activity_name=activity_name,
+            manufacturer=1,
+            product=1836,
+            activity_type='indoorride',
+            require_fit=True,
         )
         return {
             'message': 'Activity routed to Garmin',

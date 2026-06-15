@@ -30,27 +30,32 @@ def test_sync_latest_strava_activity_to_garmin(tmp_path: Path):
         pytest.skip(f"Integration credentials required: {', '.join(missing)}")
 
     source_client = StravaClient("source")
-    activities = source_client.get_activities(limit=1)
-    latest_activity = None
+    activities = source_client.get_activities(limit=5)
+    selected_activity = None
 
     if hasattr(activities, "__iter__"):
-        try:
-            latest_activity = next(iter(activities))
-        except StopIteration:
-            latest_activity = None
+        for activity in activities:
+            title = getattr(activity, "name", None) or getattr(activity, "title", None)
+            if title and "mywhoosh" in title.lower():
+                selected_activity = activity
+                break
     else:
-        latest_activity = activities
+        selected_activity = activities
 
-    assert latest_activity is not None, "No source Strava activities are available"
-    activity_id = getattr(latest_activity, "id", None) or getattr(latest_activity, "activity_id", None)
+    assert selected_activity is not None, "No source Strava activities are available"
+    activity_title = getattr(selected_activity, "name", None) or getattr(selected_activity, "title", None)
+    assert activity_title is not None, "Could not determine selected Strava activity title"
+    assert "mywhoosh" in activity_title.lower(), "No Strava activity with 'MyWhoosh' found among the latest 5 activities"
+
+    activity_id = getattr(selected_activity, "id", None) or getattr(selected_activity, "activity_id", None)
     assert activity_id is not None, "Could not determine latest Strava activity ID"
 
     output_path = str(tmp_path / f"strava_activity_{activity_id}.fit")
     garmin_client = GarminClient()
 
     # instruct the shared config to use a non-default manufacturer/product
-    app_settings.GARMIN_MANUFACTURER = 99
-    app_settings.GARMIN_PRODUCT = 100
+    app_settings.GARMIN_MANUFACTURER = 1 
+    app_settings.GARMIN_PRODUCT = 1836 #use a training-load enabled device
 
     result = sync_activity_to_garmin(
         source_client=source_client,
@@ -67,5 +72,5 @@ def test_sync_latest_strava_activity_to_garmin(tmp_path: Path):
     fp = Path(result["file_path"])
     if fp.suffix.lower() == ".fit":
         vals = read_fit_file_id_values(str(fp))
-        assert vals.get(1) == 99
-        assert vals.get(2) == 100
+        assert vals.get(1) == 1 
+        assert vals.get(2) == 1836 #use a training-load enabled device

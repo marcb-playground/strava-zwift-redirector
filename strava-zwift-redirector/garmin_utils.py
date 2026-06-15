@@ -69,20 +69,26 @@ def sync_activity_to_garmin(
     activity_name: str | None = None,
     manufacturer: int | None = None,
     product: int | None = None,
+    activity_type: str | None = None,
+    require_fit: bool = False,
 ) -> dict:
     if manufacturer is None:
         manufacturer = getattr(app_settings, "GARMIN_MANUFACTURER", 1)
     if product is None:
         product = getattr(app_settings, "GARMIN_PRODUCT", 1836)
 
-    activity_type = None
-    try:
-        src_act = source_client.stravalib_client.get_activity(activity_id)
-        activity_type = getattr(src_act, "type", None) or getattr(src_act, "sport_type", None)
-        if activity_type is not None:
-            activity_type = str(activity_type).strip()
-    except Exception:
-        activity_type = None
+    if activity_type is None:
+        try:
+            src_act = source_client.stravalib_client.get_activity(activity_id)
+            activity_type = getattr(src_act, "type", None) or getattr(src_act, "sport_type", None)
+            if activity_type is not None:
+                # Handle enum objects by extracting .value, otherwise convert to string
+                activity_type = getattr(activity_type, "value", str(activity_type)).strip()
+        except Exception:
+            activity_type = None
+    else:
+        # Handle enum objects by extracting .value, otherwise convert to string
+        activity_type = getattr(activity_type, "value", str(activity_type)).strip()
 
     activity_file_path = None
     was_fit = False
@@ -96,7 +102,10 @@ def sync_activity_to_garmin(
             output_path=output_path,
         )
         was_fit = True
-    except RuntimeError:
+    except RuntimeError as e:
+        if require_fit:
+            raise RuntimeError(f"FIT file required but download failed for activity {activity_id}: {str(e)}") from e
+
         base = output_path
         if base.lower().endswith(".fit"):
             base = base[:-4]
